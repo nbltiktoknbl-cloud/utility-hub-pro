@@ -33,6 +33,7 @@ export interface AgeResult extends DateDiffResult {
     moonDegree: number;
     moonHouse: number;
     risingSign: string;
+    risingDegree: number;
   };
   planetaryPositions: {
     mercury: string;
@@ -258,9 +259,10 @@ export const calculateAge = (dob: Date, now: Date = new Date()): AgeResult => {
   const moonDegree = Math.floor((daysSinceRef % moonDaysPerSign) / moonDaysPerSign * 30);
 
   // Rising Sign Approximation (Depends on Sun sign and birth time)
-  const birthHour = dob.getHours();
-  const risingSignIndex = (sunSignIndex + Math.floor((birthHour - 6 + 24) / 2)) % 12;
+  const birthTimeInHours = dob.getHours() + dob.getMinutes() / 60;
+  const risingSignIndex = (sunSignIndex + Math.floor((birthTimeInHours - 6 + 24) / 2)) % 12;
   const risingSign = signs[risingSignIndex];
+  const risingDegree = Math.floor(((birthTimeInHours - 6 + 24) % 2) / 2 * 30);
 
   // For each planet, calculate its house (Simplified: 1st house starts at Rising Sign)
   const getHouse = (planetSignIndex: number) => (planetSignIndex - risingSignIndex + 12) % 12 + 1;
@@ -331,7 +333,8 @@ export const calculateAge = (dob: Date, now: Date = new Date()): AgeResult => {
     moonSign,
     moonDegree,
     moonHouse: getHouse(moonSignIndex),
-    risingSign
+    risingSign,
+    risingDegree
   };
 
   return {

@@ -1,11 +1,10 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useLanguage, useTheme } from '../context/AppContext';
 import { calculateAge, AgeResult, calculateDateDifference, DateDiffResult } from '../utils/calculateAge';
-import { Calendar, Clock, Star, PartyPopper, Heart, Eye, Moon, Wind, Diamond, Share2, User, Globe, Sparkles, Copy, Check, BookOpen } from 'lucide-react';
+import BirthChartVisualizer from './BirthChartVisualizer';
+import { Calendar, Clock, Star, PartyPopper, Heart, Eye, Moon, Wind, Diamond, Share2, User, Globe, Sparkles, Copy, Check, BookOpen, Zap, ArrowUpRight } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { commonTimezones, getUserTimezone } from '../utils/timezones';
-import DatePicker from 'react-datepicker';
-import 'react-datepicker/dist/react-datepicker.css';
 
 const StatCard = ({ icon: Icon, label, value, color, delay = 0 }: { icon: any, label: string, value: string | number, color: string, delay?: number }) => {
   const { darkMode } = useTheme();
@@ -66,26 +65,108 @@ const AgeCalculator: React.FC = () => {
   const { t } = useLanguage();
   const { darkMode } = useTheme();
   const [dob, setDob] = useState<Date | null>(null);
+  const [birthDay, setBirthDay] = useState<string>('');
+  const [birthMonth, setBirthMonth] = useState<string>('');
+  const [birthYear, setBirthYear] = useState<string>('');
+  const [birthHour, setBirthHour] = useState<string>('0');
+  const [birthMinute, setBirthMinute] = useState<string>('0');
+
   const [dobEnd, setDobEnd] = useState<Date | null>(null);
+  const [endDay, setEndDay] = useState<string>('');
+  const [endMonth, setEndMonth] = useState<string>('');
+  const [endYear, setEndYear] = useState<string>('');
+  const [endHour, setEndHour] = useState<string>('0');
+  const [endMinute, setEndMinute] = useState<string>('0');
+
+  const [holidayDate, setHolidayDate] = useState<Date | null>(null);
+  const [holidayDay, setHolidayDay] = useState<string>('');
+  const [holidayMonth, setHolidayMonth] = useState<string>('');
+  const [holidayYear, setHolidayYear] = useState<string>('');
+  const [holidayHour, setHolidayHour] = useState<string>('0');
+  const [holidayMinute, setHolidayMinute] = useState<string>('0');
+
   const [birthLocation, setBirthLocation] = useState<string>('');
   const [targetYear, setTargetYear] = useState<string>(new Date().getFullYear().toString());
-  const [holidayDate, setHolidayDate] = useState<Date | null>(null);
+
   const [timezone, setTimezone] = useState<string>(getUserTimezone());
   const [activeTab, setActiveTab] = useState<'calculate' | 'compare'>('calculate');
+  
   const [compareDate1, setCompareDate1] = useState<Date | null>(null);
+  const [comp1Day, setComp1Day] = useState<string>('');
+  const [comp1Month, setComp1Month] = useState<string>('');
+  const [comp1Year, setComp1Year] = useState<string>('');
+  const [comp1Hour, setComp1Hour] = useState<string>('0');
+  const [comp1Minute, setComp1Minute] = useState<string>('0');
+
   const [compareDate2, setCompareDate2] = useState<Date | null>(null);
+  const [comp2Day, setComp2Day] = useState<string>('');
+  const [comp2Month, setComp2Month] = useState<string>('');
+  const [comp2Year, setComp2Year] = useState<string>('');
+  const [comp2Hour, setComp2Hour] = useState<string>('0');
+  const [comp2Minute, setComp2Minute] = useState<string>('0');
+
   const [compareResult, setCompareResult] = useState<any | null>(null);
   const [result, setResult] = useState<AgeResult | null>(null);
   const [ageRange, setAgeRange] = useState<{ min: AgeResult, max: AgeResult, diff: DateDiffResult } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
-  const [daysToHoliday, setDaysToHoliday] = useState<number | null>(null);
+  const [holidayCountdown, setHolidayCountdown] = useState<{ days: number, hours: number, minutes: number, seconds: number } | null>(null);
   const [easterDate, setEasterDate] = useState<Date | null>(null);
 
   useEffect(() => {
     const currentYear = new Date().getFullYear();
     setEasterDate(calculateEaster(currentYear));
   }, []);
+
+  useEffect(() => {
+    const syncDate = (dStr: string, mStr: string, yStr: string, hStr: string, minStr: string, setter: (d: Date | null) => void) => {
+      if (dStr && mStr && yStr) {
+        const d = parseInt(dStr);
+        const m = parseInt(mStr) - 1;
+        const y = parseInt(yStr);
+        const h = parseInt(hStr || '0');
+        const min = parseInt(minStr || '0');
+        
+        if (d > 0 && d <= 31 && m >= 0 && m < 12 && y > 0 && h >= 0 && h < 24 && min >= 0 && min < 60) {
+          const date = new Date(y, m, d, h, min);
+          if (date.getDate() === d && date.getMonth() === m && date.getFullYear() === y) {
+            setter(date);
+            return;
+          }
+        }
+      }
+      setter(null);
+    };
+
+    syncDate(birthDay, birthMonth, birthYear, birthHour, birthMinute, setDob);
+    syncDate(endDay, endMonth, endYear, endHour, endMinute, setDobEnd);
+    syncDate(holidayDay, holidayMonth, holidayYear, holidayHour, holidayMinute, setHolidayDate);
+    syncDate(comp1Day, comp1Month, comp1Year, comp1Hour, comp1Minute, setCompareDate1);
+    syncDate(comp2Day, comp2Month, comp2Year, comp2Hour, comp2Minute, setCompareDate2);
+  }, [birthDay, birthMonth, birthYear, birthHour, birthMinute, endDay, endMonth, endYear, endHour, endMinute, holidayDay, holidayMonth, holidayYear, holidayHour, holidayMinute, comp1Day, comp1Month, comp1Year, comp1Hour, comp1Minute, comp2Day, comp2Month, comp2Year]);
+
+  useEffect(() => {
+    if (holidayDate) {
+      const interval = setInterval(() => {
+        const holiday = new Date(holidayDate);
+        const now = new Date();
+        const diffMs = holiday.getTime() - now.getTime();
+        if (diffMs > 0) {
+          const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+          const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+          const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+          const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+          setHolidayCountdown({ days, hours, minutes, seconds });
+        } else {
+          setHolidayCountdown(null);
+          clearInterval(interval);
+        }
+      }, 1000);
+      return () => clearInterval(interval);
+    } else {
+      setHolidayCountdown(null);
+    }
+  }, [holidayDate]);
 
   const handleCalculate = useCallback(() => {
     setError(null);
@@ -166,18 +247,29 @@ const AgeCalculator: React.FC = () => {
         setAgeRange(null);
       }
 
-      // Calculate days to holiday
+      // Calculate countdown to holiday
       if (holidayDate) {
         const holiday = new Date(holidayDate);
         if (!isNaN(holiday.getTime())) {
-          const diffMs = holiday.getTime() - nowInTimezone.getTime();
-          const diffDays = Math.ceil(diffMs / (1000 * 60 * 60 * 24));
-          setDaysToHoliday(diffDays > 0 ? diffDays : null);
+          const updateCountdown = () => {
+            const now = new Date();
+            const diffMs = holiday.getTime() - now.getTime();
+            if (diffMs > 0) {
+              const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+              const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+              const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
+              const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
+              setHolidayCountdown({ days, hours, minutes, seconds });
+            } else {
+              setHolidayCountdown(null);
+            }
+          };
+          updateCountdown();
         } else {
-          setDaysToHoliday(null);
+          setHolidayCountdown(null);
         }
       } else {
-        setDaysToHoliday(null);
+        setHolidayCountdown(null);
       }
     } catch (err) {
       console.error(err);
@@ -335,73 +427,258 @@ const AgeCalculator: React.FC = () => {
       <div className={`p-6 md:p-8 rounded-3xl glass shadow-2xl mb-8 transition-all`}>
         {activeTab === 'calculate' ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-7 gap-6 items-end">
-            <div className="w-full">
-              <label htmlFor="dob-input" className={`block text-sm font-bold mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+            <div className="w-full lg:col-span-2">
+              <label className={`block text-sm font-bold mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                 {t.dobLabel}
               </label>
-              <div className="relative">
-                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 z-10" size={16} />
-                <DatePicker
-                  id="dob-input"
-                  selected={dob}
-                  onChange={(date) => setDob(date)}
-                  showTimeSelect
-                  dateFormat="yyyy-MM-dd HH:mm"
-                  maxDate={new Date()}
-                  placeholderText={t.dobLabel}
-                  className={`w-full pl-12 pr-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
-                    darkMode 
-                      ? 'bg-gray-800/50 border-gray-700 text-white' 
-                      : 'bg-white/50 border-gray-200 text-gray-900'
-                  }`}
-                  wrapperClassName="w-full"
-                />
+              <div className="grid grid-cols-3 gap-2 mb-4">
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.dayLabel}</span>
+                  <input
+                    type="number"
+                    placeholder="DD"
+                    value={birthDay}
+                    onChange={(e) => setBirthDay(e.target.value)}
+                    min="1"
+                    max="31"
+                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
+                      darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
+                    }`}
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.monthLabel}</span>
+                  <input
+                    type="number"
+                    placeholder="MM"
+                    value={birthMonth}
+                    onChange={(e) => setBirthMonth(e.target.value)}
+                    min="1"
+                    max="12"
+                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
+                      darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
+                    }`}
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.yearLabel}</span>
+                  <input
+                    type="number"
+                    placeholder="YYYY"
+                    value={birthYear}
+                    onChange={(e) => setBirthYear(e.target.value)}
+                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
+                      darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
+                    }`}
+                  />
+                </div>
+              </div>
+              <label className={`block text-sm font-bold mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                {t.birthTimeLabel}
+              </label>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.hourLabel}</span>
+                  <div className="relative">
+                    <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+                    <input
+                      type="number"
+                      placeholder="HH"
+                      value={birthHour}
+                      onChange={(e) => setBirthHour(e.target.value)}
+                      min="0"
+                      max="23"
+                      className={`w-full pl-9 pr-4 py-2 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm ${
+                        darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
+                      }`}
+                    />
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.minuteLabel}</span>
+                  <div className="relative">
+                    <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+                    <input
+                      type="number"
+                      placeholder="MM"
+                      value={birthMinute}
+                      onChange={(e) => setBirthMinute(e.target.value)}
+                      min="0"
+                      max="59"
+                      className={`w-full pl-9 pr-4 py-2 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm ${
+                        darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
+                      }`}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div className="w-full">
-              <label htmlFor="dob-end-input" className={`block text-sm font-bold mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+            <div className="w-full lg:col-span-2">
+              <label className={`block text-sm font-bold mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                 {t.dobRangeEndLabel}
               </label>
-              <div className="relative">
-                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 z-10" size={16} />
-                <DatePicker
-                  id="dob-end-input"
-                  selected={dobEnd}
-                  onChange={(date) => setDobEnd(date)}
-                  showTimeSelect
-                  dateFormat="yyyy-MM-dd HH:mm"
-                  maxDate={new Date()}
-                  placeholderText={t.dobRangeEndLabel}
-                  className={`w-full pl-12 pr-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
-                    darkMode 
-                      ? 'bg-gray-800/50 border-gray-700 text-white' 
-                      : 'bg-white/50 border-gray-200 text-gray-900'
-                  }`}
-                  wrapperClassName="w-full"
-                />
+              <div className="grid grid-cols-3 gap-2 mb-2">
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.dayLabel}</span>
+                  <input
+                    type="number"
+                    placeholder="DD"
+                    value={endDay}
+                    onChange={(e) => setEndDay(e.target.value)}
+                    min="1"
+                    max="31"
+                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
+                      darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
+                    }`}
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.monthLabel}</span>
+                  <input
+                    type="number"
+                    placeholder="MM"
+                    value={endMonth}
+                    onChange={(e) => setEndMonth(e.target.value)}
+                    min="1"
+                    max="12"
+                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
+                      darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
+                    }`}
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.yearLabel}</span>
+                  <input
+                    type="number"
+                    placeholder="YYYY"
+                    value={endYear}
+                    onChange={(e) => setEndYear(e.target.value)}
+                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
+                      darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
+                    }`}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.hourLabel}</span>
+                  <div className="relative">
+                    <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+                    <input
+                      type="number"
+                      placeholder="HH"
+                      value={endHour}
+                      onChange={(e) => setEndHour(e.target.value)}
+                      min="0"
+                      max="23"
+                      className={`w-full pl-9 pr-4 py-2 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm ${
+                        darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
+                      }`}
+                    />
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.minuteLabel}</span>
+                  <div className="relative">
+                    <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+                    <input
+                      type="number"
+                      placeholder="MM"
+                      value={endMinute}
+                      onChange={(e) => setEndMinute(e.target.value)}
+                      min="0"
+                      max="59"
+                      className={`w-full pl-9 pr-4 py-2 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm ${
+                        darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
+                      }`}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div className="w-full">
-              <label htmlFor="holiday-input" className={`block text-sm font-bold mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+            <div className="w-full lg:col-span-2">
+              <label className={`block text-sm font-bold mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                 {t.holidayLabel}
               </label>
-              <div className="relative">
-                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 z-10" size={16} />
-                <DatePicker
-                  id="holiday-input"
-                  selected={holidayDate}
-                  onChange={(date) => setHolidayDate(date)}
-                  dateFormat="yyyy-MM-dd"
-                  placeholderText={t.holidayLabel}
-                  className={`w-full pl-12 pr-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
-                    darkMode 
-                      ? 'bg-gray-800/50 border-gray-700 text-white' 
-                      : 'bg-white/50 border-gray-200 text-gray-900'
-                  }`}
-                  wrapperClassName="w-full"
-                />
+              <div className="grid grid-cols-3 gap-2 mb-2">
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.dayLabel}</span>
+                  <input
+                    type="number"
+                    placeholder="DD"
+                    value={holidayDay}
+                    onChange={(e) => setHolidayDay(e.target.value)}
+                    min="1"
+                    max="31"
+                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
+                      darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
+                    }`}
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.monthLabel}</span>
+                  <input
+                    type="number"
+                    placeholder="MM"
+                    value={holidayMonth}
+                    onChange={(e) => setHolidayMonth(e.target.value)}
+                    min="1"
+                    max="12"
+                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
+                      darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
+                    }`}
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.yearLabel}</span>
+                  <input
+                    type="number"
+                    placeholder="YYYY"
+                    value={holidayYear}
+                    onChange={(e) => setHolidayYear(e.target.value)}
+                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
+                      darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
+                    }`}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.hourLabel}</span>
+                  <div className="relative">
+                    <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+                    <input
+                      type="number"
+                      placeholder="HH"
+                      value={holidayHour}
+                      onChange={(e) => setHolidayHour(e.target.value)}
+                      min="0"
+                      max="23"
+                      className={`w-full pl-9 pr-4 py-2 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm ${
+                        darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
+                      }`}
+                    />
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.minuteLabel}</span>
+                  <div className="relative">
+                    <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+                    <input
+                      type="number"
+                      placeholder="MM"
+                      value={holidayMinute}
+                      onChange={(e) => setHolidayMinute(e.target.value)}
+                      min="0"
+                      max="59"
+                      className={`w-full pl-9 pr-4 py-2 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm ${
+                        darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
+                      }`}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -499,50 +776,172 @@ const AgeCalculator: React.FC = () => {
           </button>
         </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-end">
-            <div className="w-full">
-              <label htmlFor="compare-date-1" className={`block text-sm font-bold mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-end">
+            <div className="w-full lg:col-span-1">
+              <label className={`block text-sm font-bold mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                 {t.date1Label}
               </label>
-              <div className="relative">
-                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 z-10" size={16} />
-                <DatePicker
-                  id="compare-date-1"
-                  selected={compareDate1}
-                  onChange={(date) => setCompareDate1(date)}
-                  showTimeSelect
-                  dateFormat="yyyy-MM-dd HH:mm"
-                  placeholderText={t.date1Label}
-                  className={`w-full pl-12 pr-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
-                    darkMode 
-                      ? 'bg-gray-800/50 border-gray-700 text-white' 
-                      : 'bg-white/50 border-gray-200 text-gray-900'
-                  }`}
-                  wrapperClassName="w-full"
-                />
+              <div className="grid grid-cols-3 gap-2 mb-2">
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.dayLabel}</span>
+                  <input
+                    type="number"
+                    placeholder="DD"
+                    value={comp1Day}
+                    onChange={(e) => setComp1Day(e.target.value)}
+                    min="1"
+                    max="31"
+                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
+                      darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
+                    }`}
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.monthLabel}</span>
+                  <input
+                    type="number"
+                    placeholder="MM"
+                    value={comp1Month}
+                    onChange={(e) => setComp1Month(e.target.value)}
+                    min="1"
+                    max="12"
+                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
+                      darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
+                    }`}
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.yearLabel}</span>
+                  <input
+                    type="number"
+                    placeholder="YYYY"
+                    value={comp1Year}
+                    onChange={(e) => setComp1Year(e.target.value)}
+                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
+                      darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
+                    }`}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.hourLabel}</span>
+                  <div className="relative">
+                    <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+                    <input
+                      type="number"
+                      placeholder="HH"
+                      value={comp1Hour}
+                      onChange={(e) => setComp1Hour(e.target.value)}
+                      min="0"
+                      max="23"
+                      className={`w-full pl-9 pr-4 py-2 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm ${
+                        darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
+                      }`}
+                    />
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.minuteLabel}</span>
+                  <div className="relative">
+                    <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+                    <input
+                      type="number"
+                      placeholder="MM"
+                      value={comp1Minute}
+                      onChange={(e) => setComp1Minute(e.target.value)}
+                      min="0"
+                      max="59"
+                      className={`w-full pl-9 pr-4 py-2 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm ${
+                        darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
+                      }`}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 
-            <div className="w-full">
-              <label htmlFor="compare-date-2" className={`block text-sm font-bold mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+            <div className="w-full lg:col-span-1">
+              <label className={`block text-sm font-bold mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
                 {t.date2Label}
               </label>
-              <div className="relative">
-                <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 z-10" size={16} />
-                <DatePicker
-                  id="compare-date-2"
-                  selected={compareDate2}
-                  onChange={(date) => setCompareDate2(date)}
-                  showTimeSelect
-                  dateFormat="yyyy-MM-dd HH:mm"
-                  placeholderText={t.date2Label}
-                  className={`w-full pl-12 pr-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
-                    darkMode 
-                      ? 'bg-gray-800/50 border-gray-700 text-white' 
-                      : 'bg-white/50 border-gray-200 text-gray-900'
-                  }`}
-                  wrapperClassName="w-full"
-                />
+              <div className="grid grid-cols-3 gap-2 mb-2">
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.dayLabel}</span>
+                  <input
+                    type="number"
+                    placeholder="DD"
+                    value={comp2Day}
+                    onChange={(e) => setComp2Day(e.target.value)}
+                    min="1"
+                    max="31"
+                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
+                      darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
+                    }`}
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.monthLabel}</span>
+                  <input
+                    type="number"
+                    placeholder="MM"
+                    value={comp2Month}
+                    onChange={(e) => setComp2Month(e.target.value)}
+                    min="1"
+                    max="12"
+                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
+                      darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
+                    }`}
+                  />
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.yearLabel}</span>
+                  <input
+                    type="number"
+                    placeholder="YYYY"
+                    value={comp2Year}
+                    onChange={(e) => setComp2Year(e.target.value)}
+                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
+                      darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
+                    }`}
+                  />
+                </div>
+              </div>
+              <div className="grid grid-cols-2 gap-2">
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.hourLabel}</span>
+                  <div className="relative">
+                    <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+                    <input
+                      type="number"
+                      placeholder="HH"
+                      value={comp2Hour}
+                      onChange={(e) => setComp2Hour(e.target.value)}
+                      min="0"
+                      max="23"
+                      className={`w-full pl-9 pr-4 py-2 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm ${
+                        darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
+                      }`}
+                    />
+                  </div>
+                </div>
+                <div className="flex flex-col gap-1">
+                  <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.minuteLabel}</span>
+                  <div className="relative">
+                    <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
+                    <input
+                      type="number"
+                      placeholder="MM"
+                      value={comp2Minute}
+                      onChange={(e) => setComp2Minute(e.target.value)}
+                      min="0"
+                      max="59"
+                      className={`w-full pl-9 pr-4 py-2 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm ${
+                        darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
+                      }`}
+                    />
+                  </div>
+                </div>
               </div>
             </div>
 
@@ -662,49 +1061,131 @@ const AgeCalculator: React.FC = () => {
                 {birthLocation && <span className="text-sm font-normal opacity-60">({birthLocation})</span>}
               </h3>
 
-              {/* Sun Sign Highlight */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.75 }}
-                className="p-8 rounded-3xl glass-card border-l-8 border-orange-500 bg-gradient-to-br from-orange-500/10 to-transparent shadow-xl"
-              >
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-                  <div className="flex items-center gap-6">
-                    <div className="p-5 rounded-2xl bg-orange-500 text-white shadow-lg shadow-orange-500/30">
-                      <Star size={16} />
-                    </div>
-                    <div>
-                      <div className="text-xs font-bold uppercase tracking-widest text-orange-400 mb-1">{t.sunSignLabel}</div>
-                      <h4 className="text-4xl font-black tracking-tighter">
-                        {t.zodiacSigns[result.birthChart.sunSign]}
-                        <span className="text-xl ml-2 opacity-60">({result.birthChart.sunDegree}°)</span>
-                      </h4>
-                    </div>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    <span className="px-3 py-1.5 rounded-xl bg-orange-500/10 text-orange-400 text-[10px] font-bold uppercase tracking-widest border border-orange-500/20">{t.elements[signAttributes[result.birthChart.sunSign].element]}</span>
-                    <span className="px-3 py-1.5 rounded-xl bg-orange-500/10 text-orange-400 text-[10px] font-bold uppercase tracking-widest border border-orange-500/20">{t.modalities[signAttributes[result.birthChart.sunSign].modality]}</span>
-                    <span className="px-3 py-1.5 rounded-xl bg-orange-500/10 text-orange-400 text-[10px] font-bold uppercase tracking-widest border border-orange-500/20">{t.rulingPlanets[signAttributes[result.birthChart.sunSign].rulingPlanet]}</span>
-                  </div>
+              <div className="space-y-8">
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.95 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  transition={{ delay: 0.7 }}
+                >
+                  <BirthChartVisualizer result={result} t={t} darkMode={darkMode} />
+                </motion.div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                  {[
+                    { 
+                      planet: 'sun', 
+                      label: t.sunSignLabel, 
+                      sign: result.birthChart.sunSign, 
+                      degree: result.birthChart.sunDegree, 
+                      house: result.birthChart.sunHouse,
+                      color: 'border-orange-500', 
+                      bgColor: 'from-orange-500/10', 
+                      iconColor: 'text-orange-400', 
+                      badgeColor: 'bg-orange-500/10 text-orange-400 border-orange-500/20',
+                      icon: <Star size={16} />,
+                      interpretations: t.sunSignInterpretations
+                    },
+                    { 
+                      planet: 'moon', 
+                      label: t.moonSignLabel, 
+                      sign: result.birthChart.moonSign, 
+                      degree: result.birthChart.moonDegree, 
+                      house: result.birthChart.moonHouse,
+                      color: 'border-indigo-500', 
+                      bgColor: 'from-indigo-500/10', 
+                      iconColor: 'text-indigo-400', 
+                      badgeColor: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
+                      icon: <Moon size={16} />,
+                      interpretations: t.moonSignInterpretations
+                    },
+                    { 
+                      planet: 'rising', 
+                      label: t.risingSignLabel, 
+                      sign: result.birthChart.risingSign, 
+                      degree: result.birthChart.risingDegree, 
+                      house: 1,
+                      color: 'border-emerald-500', 
+                      bgColor: 'from-emerald-500/10', 
+                      iconColor: 'text-emerald-400', 
+                      badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+                      icon: <ArrowUpRight size={16} />,
+                      interpretations: t.risingSignInterpretations
+                    },
+                  ].map((item, idx) => {
+                    const attrs = signAttributes[item.sign];
+                    return (
+                      <motion.div
+                        key={item.planet}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.75 + idx * 0.1 }}
+                        className={`p-6 rounded-3xl glass-card border-l-8 ${item.color} bg-gradient-to-br ${item.bgColor} to-transparent shadow-xl flex flex-col`}
+                      >
+                        <div className="flex flex-col gap-4">
+                          <div className="flex items-center gap-4">
+                            <div className={`p-3 rounded-xl ${item.planet === 'sun' ? 'bg-orange-500' : item.planet === 'moon' ? 'bg-indigo-500' : 'bg-emerald-500'} text-white shadow-lg`}>
+                              {item.icon}
+                            </div>
+                            <div>
+                              <div className={`text-[10px] font-bold uppercase tracking-widest ${item.iconColor} mb-0.5`}>{item.label}</div>
+                              <h4 className="text-2xl font-black tracking-tighter">
+                                {t.zodiacSigns[item.sign]}
+                                {item.degree !== undefined && <span className="text-sm ml-1.5 opacity-60">({item.degree}°)</span>}
+                              </h4>
+                            </div>
+                          </div>
+                          <div className="flex flex-wrap gap-1.5">
+                            <span className={`px-2 py-1 rounded-lg ${item.badgeColor} text-[9px] font-bold uppercase tracking-widest border`}>{t.elements[attrs.element]}</span>
+                            <span className={`px-2 py-1 rounded-lg ${item.badgeColor} text-[9px] font-bold uppercase tracking-widest border`}>{t.modalities[attrs.modality]}</span>
+                            <span className={`px-2 py-1 rounded-lg ${item.badgeColor} text-[9px] font-bold uppercase tracking-widest border`}>{t.rulingPlanets[attrs.rulingPlanet]}</span>
+                            {item.house !== undefined && (
+                              <span className={`px-2 py-1 rounded-lg ${item.badgeColor} text-[9px] font-bold uppercase tracking-widest border`}>
+                                {t.houseLabel.replace('{n}', item.house.toString())}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="mt-4 pt-4 border-t border-white/5 flex-grow">
+                          <p className="text-xs leading-relaxed font-medium mb-3 italic opacity-80">
+                            "{t.zodiacDescriptions[item.sign]}"
+                          </p>
+                          <p className={`text-xs leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-600'} mb-4`}>
+                            {item.interpretations[item.sign]}
+                          </p>
+
+                          <div className={`text-[10px] space-y-2 pt-4 border-t border-white/5 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                            <p className="mb-2 text-gray-300 font-medium italic">
+                              {t.planetMeanings[item.planet] || ''}
+                            </p>
+                            <div className="flex justify-between">
+                              <span>{t.degreeLabel}:</span>
+                              <span className="font-bold text-gray-300">{item.degree}°</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>{t.housesTitle.slice(0, -1)}:</span>
+                              <span className="font-bold text-gray-300">{t.houseLabel.replace('{n}', item.house.toString())}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>{t.elementLabel}:</span>
+                              <span className="font-bold text-gray-300">{t.elements[attrs.element]}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>{t.modalityLabel}:</span>
+                              <span className="font-bold text-gray-300">{t.modalities[attrs.modality]}</span>
+                            </div>
+                            <div className="flex justify-between">
+                              <span>{t.rulingPlanetLabel}:</span>
+                              <span className="font-bold text-gray-300">{t.rulingPlanets[attrs.rulingPlanet]}</span>
+                            </div>
+                          </div>
+                        </div>
+                      </motion.div>
+                    );
+                  })}
                 </div>
-                <div className="mt-6 pt-6 border-t border-white/5">
-                  <p className="text-sm leading-relaxed font-medium mb-4 italic text-orange-200/80">
-                    "{t.zodiacDescriptions[result.birthChart.sunSign]}"
-                  </p>
-                  <p className={`text-sm leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                    {t.sunSignInterpretations[result.birthChart.sunSign]}
-                  </p>
-                  <p className={`mt-4 text-xs opacity-60 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                    {t.sunSignDetailedDescription}
-                  </p>
-                </div>
-              </motion.div>
+              </div>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {[
-                  { planet: 'sun', label: t.sunSignLabel, sign: result.birthChart.sunSign, degree: result.birthChart.sunDegree, house: result.birthChart.sunHouse, color: 'border-orange-500', iconColor: 'text-orange-500', isSun: true },
-                  { planet: 'moon', label: t.moonSignLabel, sign: result.birthChart.moonSign, degree: result.birthChart.moonDegree, house: result.birthChart.moonHouse, color: 'border-indigo-500', iconColor: 'text-indigo-500' },
-                  { planet: 'rising', label: t.risingSignLabel, sign: result.birthChart.risingSign, house: 1, color: 'border-emerald-500', iconColor: 'text-emerald-500' },
                   { planet: 'mercury', label: t.mercuryLabel, sign: result.planetaryPositions.mercury, degree: result.planetaryPositions.mercuryDegree, house: result.planetaryPositions.mercuryHouse, color: 'border-yellow-400', iconColor: 'text-yellow-400' },
                   { planet: 'venus', label: t.venusLabel, sign: result.planetaryPositions.venus, degree: result.planetaryPositions.venusDegree, house: result.planetaryPositions.venusHouse, color: 'border-pink-400', iconColor: 'text-pink-400' },
                   { planet: 'mars', label: t.marsLabel, sign: result.planetaryPositions.mars, degree: result.planetaryPositions.marsDegree, house: result.planetaryPositions.marsHouse, color: 'border-red-400', iconColor: 'text-red-400' },
@@ -725,17 +1206,6 @@ const AgeCalculator: React.FC = () => {
                           <div className="text-sm font-bold opacity-60 mb-1">{item.degree}°</div>
                         )}
                       </div>
-                      {item.isSun && (
-                        <div className="mt-3 p-3 rounded-2xl bg-orange-500/10 border border-orange-500/20">
-                          <p className="text-[11px] font-bold text-orange-400 mb-1 flex items-center gap-1">
-                            <Sparkles size={10} />
-                            {t.sunSignLabel} {t.resultsTitle.split(' ')[1]}
-                          </p>
-                          <p className="text-[10px] leading-relaxed text-gray-300 italic">
-                            {t.sunSignDetailedDescription}
-                          </p>
-                        </div>
-                      )}
                       <div className={`text-[10px] mt-2 space-y-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                         <p className="mb-2 text-gray-300 font-medium">
                           {t.planetMeanings[item.planet] || ''}
@@ -868,16 +1338,19 @@ const AgeCalculator: React.FC = () => {
                 <Sparkles className="text-purple-500" size={16} />
                 {t.zodiacSign} Profile
               </h3>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[
                   { label: t.sunSignLabel, sign: result.birthChart.sunSign, degree: result.birthChart.sunDegree, icon: Star, color: 'from-orange-400 to-red-500' },
                   { label: t.moonSignLabel, sign: result.birthChart.moonSign, degree: result.birthChart.moonDegree, icon: Moon, color: 'from-indigo-400 to-blue-500' },
                   { label: t.risingSignLabel, sign: result.birthChart.risingSign, icon: Sparkles, color: 'from-emerald-400 to-teal-500' },
+                  { label: t.mercuryLabel, sign: result.planetaryPositions.mercury, degree: result.planetaryPositions.mercuryDegree, icon: Globe, color: 'from-yellow-400 to-orange-500' },
+                  { label: t.venusLabel, sign: result.planetaryPositions.venus, degree: result.planetaryPositions.venusDegree, icon: Heart, color: 'from-pink-400 to-rose-500' },
+                  { label: t.marsLabel, sign: result.planetaryPositions.mars, degree: result.planetaryPositions.marsDegree, icon: Zap, color: 'from-red-400 to-orange-600' },
                 ].map((item, idx) => {
                   const attrs = signAttributes[item.sign];
                   return (
                     <motion.div 
-                      key={item.label}
+                      key={idx}
                       initial={{ opacity: 0, scale: 0.95 }}
                       animate={{ opacity: 1, scale: 1 }}
                       transition={{ delay: 0.75 + idx * 0.1 }}
@@ -916,21 +1389,29 @@ const AgeCalculator: React.FC = () => {
                 </h3>
                 <div className="space-y-6">
                   {[
-                    { label: t.sunSignLabel, sign: result.birthChart.sunSign, degree: result.birthChart.sunDegree, icon: Star, color: 'text-orange-400' },
-                    { label: t.moonSignLabel, sign: result.birthChart.moonSign, degree: result.birthChart.moonDegree, icon: Moon, color: 'text-indigo-400' },
-                    { label: t.risingSignLabel, sign: result.birthChart.risingSign, icon: Sparkles, color: 'text-emerald-400' },
+                    { label: t.sunSignLabel, sign: result.birthChart.sunSign, degree: result.birthChart.sunDegree, house: result.birthChart.sunHouse, icon: Star, color: 'text-orange-400', interpretation: t.sunSignInterpretations },
+                    { label: t.moonSignLabel, sign: result.birthChart.moonSign, degree: result.birthChart.moonDegree, house: result.birthChart.moonHouse, icon: Moon, color: 'text-indigo-400', interpretation: t.moonSignInterpretations },
+                    { label: t.risingSignLabel, sign: result.birthChart.risingSign, house: 1, icon: Sparkles, color: 'text-emerald-400', interpretation: t.risingSignInterpretations },
+                    { label: t.mercuryLabel, sign: result.planetaryPositions.mercury, degree: result.planetaryPositions.mercuryDegree, house: result.planetaryPositions.mercuryHouse, icon: Globe, color: 'text-yellow-400', interpretation: t.mercurySignInterpretations },
+                    { label: t.venusLabel, sign: result.planetaryPositions.venus, degree: result.planetaryPositions.venusDegree, house: result.planetaryPositions.venusHouse, icon: Heart, color: 'text-pink-400', interpretation: t.venusSignInterpretations },
+                    { label: t.marsLabel, sign: result.planetaryPositions.mars, degree: result.planetaryPositions.marsDegree, house: result.planetaryPositions.marsHouse, icon: Zap, color: 'text-red-400', interpretation: t.marsSignInterpretations },
                   ].map((item, idx) => (
                     <div key={idx} className="flex gap-4 items-start">
                       <div className={`p-3 rounded-2xl bg-white/5 ${item.color}`}>
                         <item.icon size={16} />
                       </div>
-                      <div>
-                        <div className="flex items-center gap-2 mb-1">
+                      <div className="flex-1">
+                        <div className="flex flex-wrap items-center gap-2 mb-1">
                           <span className="text-xs font-bold uppercase tracking-widest opacity-60">{item.label}:</span>
                           <span className={`text-sm font-black ${item.color}`}>
                             {t.zodiacSigns[item.sign]}
                             {item.degree !== undefined && <span className="text-xs ml-1 opacity-60">({item.degree}°)</span>}
                           </span>
+                          {item.house !== undefined && (
+                            <span className="px-2 py-0.5 rounded-md bg-white/5 text-[10px] font-bold text-blue-400 border border-white/10">
+                              {t.houseLabel.replace('{n}', item.house.toString())}
+                            </span>
+                          )}
                         </div>
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-4">
                           <div className="p-3 rounded-2xl bg-white/5 border border-white/5">
@@ -962,9 +1443,7 @@ const AgeCalculator: React.FC = () => {
                             </p>
                           )}
                           <p className={`text-sm leading-relaxed ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                            {idx === 0 ? t.sunSignInterpretations[item.sign] : 
-                             idx === 1 ? t.moonSignInterpretations[item.sign] : 
-                             t.risingSignInterpretations[item.sign]}
+                            {item.interpretation[item.sign]}
                           </p>
                         </div>
                       </div>
@@ -1054,13 +1533,33 @@ const AgeCalculator: React.FC = () => {
               </motion.div>
             </div>
 
-            {daysToHoliday !== null && (
+            {holidayCountdown !== null && (
               <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className={`p-6 rounded-3xl text-center font-black text-xl bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 ${darkMode ? 'text-emerald-400' : 'text-emerald-700'}`}
+                className="p-8 rounded-3xl glass-card border border-emerald-500/30 space-y-4"
               >
-                {t.daysUntilHoliday.replace('{days}', daysToHoliday.toString())}
+                <h3 className="text-xl font-black tracking-tight flex items-center justify-center gap-2 text-emerald-500">
+                  <PartyPopper size={20} />
+                  {t.holidayCountdownLabel}
+                </h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  {[
+                    { label: t.days, value: holidayCountdown.days },
+                    { label: t.hours, value: holidayCountdown.hours },
+                    { label: t.minutes, value: holidayCountdown.minutes },
+                    { label: t.seconds, value: holidayCountdown.seconds },
+                  ].map((item, idx) => (
+                    <div key={idx} className="p-4 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex flex-col items-center">
+                      <span className="text-3xl font-black text-emerald-500 tabular-nums">
+                        {item.value.toString().padStart(2, '0')}
+                      </span>
+                      <span className="text-[10px] font-bold uppercase tracking-widest text-emerald-400 mt-1">
+                        {item.label}
+                      </span>
+                    </div>
+                  ))}
+                </div>
               </motion.div>
             )}
 

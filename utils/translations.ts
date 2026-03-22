@@ -5,6 +5,7 @@ export interface TranslationSet {
   subtitle: string;
   dobLabel: string;
   timezoneLabel: string;
+  birthTimeLabel: string;
   calculateBtn: string;
   resultsTitle: string;
   ageLabel: string;
@@ -15,6 +16,11 @@ export interface TranslationSet {
   hours: string;
   minutes: string;
   seconds: string;
+  hourLabel: string;
+  minuteLabel: string;
+  dayLabel: string;
+  monthLabel: string;
+  yearLabel: string;
   nextBirthday: string;
   zodiacSign: string;
   birthstone: string;
@@ -50,6 +56,7 @@ export interface TranslationSet {
   ageRangeSummary: string;
   easterDate: string;
   targetYearLabel: string;
+  holidayCountdownLabel: string;
   bmiCalculator: string;
   discountCalculator: string;
   weightLabel: string;
@@ -106,6 +113,9 @@ export interface TranslationSet {
   sunSignInterpretations: Record<string, string>;
   moonSignInterpretations: Record<string, string>;
   risingSignInterpretations: Record<string, string>;
+  mercurySignInterpretations: Record<string, string>;
+  venusSignInterpretations: Record<string, string>;
+  marsSignInterpretations: Record<string, string>;
 }
 
 export const translations: Record<LanguageCode, TranslationSet> = {
@@ -124,6 +134,11 @@ export const translations: Record<LanguageCode, TranslationSet> = {
     hours: 'Hours',
     minutes: 'Minutes',
     seconds: 'Seconds',
+    hourLabel: 'Hour',
+    minuteLabel: 'Minute',
+    dayLabel: 'Day',
+    monthLabel: 'Month',
+    yearLabel: 'Year',
     nextBirthday: 'Next Birthday',
     zodiacSign: 'Zodiac Sign',
     birthstone: 'Birthstone',
@@ -159,6 +174,7 @@ export const translations: Record<LanguageCode, TranslationSet> = {
     ageRangeSummary: 'Your age range is between {min} and {max}.',
     easterDate: 'Easter Date {year}',
     targetYearLabel: 'Target Year (Optional)',
+    holidayCountdownLabel: 'Countdown to Holiday',
     bmiCalculator: 'BMI Calculator',
     discountCalculator: 'Discount Calculator',
     weightLabel: 'Weight (kg)',
@@ -175,6 +191,7 @@ export const translations: Record<LanguageCode, TranslationSet> = {
     savingsLabel: 'You save: {savings}',
     birthChartTitle: 'Your Birth Chart',
     birthLocationLabel: 'Birth Location (City, Country)',
+    birthTimeLabel: 'Birth Time',
     sunSignLabel: 'Sun Sign',
     moonSignLabel: 'Moon Sign',
     risingSignLabel: 'Rising Sign',
@@ -346,6 +363,48 @@ export const translations: Record<LanguageCode, TranslationSet> = {
       capricorn: 'You project a disciplined, ambitious, and serious personality. Others see you as responsible, professional, and someone who values achievement. You approach the world with a practical and structured mindset.',
       aquarius: 'You project an innovative, independent, and unique personality. Others see you as progressive, intellectual, and someone who values humanitarian ideals. You approach the world with original ideas.',
       pisces: 'You project a compassionate, imaginative, and intuitive personality. Others see you as empathetic, sensitive, and someone with a mystical nature. You approach the world with a dreamy and gentle presence.'
+    },
+    mercurySignInterpretations: {
+      aries: 'Direct, quick, and assertive communication. You think fast and speak your mind.',
+      taurus: 'Practical, steady, and deliberate thinking. You value concrete facts and logic.',
+      gemini: 'Versatile, curious, and highly communicative. You process information rapidly.',
+      cancer: 'Intuitive, emotional, and retentive memory. Your thinking is tied to feelings.',
+      leo: 'Creative, expressive, and confident communication. You speak with authority.',
+      virgo: 'Analytical, precise, and detail-oriented. You seek order and clarity in thought.',
+      libra: 'Diplomatic, balanced, and fair-minded. You seek harmony in communication.',
+      scorpio: 'Intense, investigative, and deep thinking. You seek to uncover hidden truths.',
+      sagittarius: 'Optimistic, philosophical, and broad-minded. You seek truth and expansion.',
+      capricorn: 'Disciplined, structured, and practical thinking. You value logic and tradition.',
+      aquarius: 'Innovative, original, and unconventional. You think outside the box.',
+      pisces: 'Intuitive, imaginative, and poetic. Your thinking is fluid and sensitive.'
+    },
+    venusSignInterpretations: {
+      aries: 'Passionate, direct, and independent in love. You value excitement and initiative.',
+      taurus: 'Sensual, loyal, and seeking stability. You value comfort and physical touch.',
+      gemini: 'Versatile, social, and communicative. You value intellectual connection and variety.',
+      cancer: 'Nurturing, sensitive, and seeking security. You value home and emotional depth.',
+      leo: 'Dramatic, generous, and seeking appreciation. You value warmth and creativity.',
+      virgo: 'Practical, helpful, and seeking improvement. You value service and order in love.',
+      libra: 'Diplomatic, artistic, and seeking balance. You value harmony and partnership.',
+      scorpio: 'Intense, private, and transformative. You value deep emotional truth and loyalty.',
+      sagittarius: 'Adventurous, freedom-loving, and optimistic. You value growth and exploration.',
+      capricorn: 'Serious, disciplined, and seeking achievement. You value tradition and integrity.',
+      aquarius: 'Independent, unique, and humanitarian. You value friendship and original ideas.',
+      pisces: 'Compassionate, imaginative, and intuitive. You value spiritual connection and beauty.'
+    },
+    marsSignInterpretations: {
+      aries: 'Dynamic, courageous, and direct action. You have a strong drive for leadership.',
+      taurus: 'Steady, persistent, and practical energy. You possess great endurance.',
+      gemini: 'Versatile, communicative, and restless energy. You thrive on variety and change.',
+      cancer: 'Intuitive, protective, and emotional drive. You take action based on feelings.',
+      leo: 'Creative, confident, and dramatic energy. You seek to inspire and be recognized.',
+      virgo: 'Analytical, efficient, and detail-oriented action. You seek order and service.',
+      libra: 'Diplomatic, balanced, and seeking harmony. You take action through partnership.',
+      scorpio: 'Intense, powerful, and transformative drive. You possess a strong will.',
+      sagittarius: 'Optimistic, adventurous, and freedom-loving energy. You seek truth.',
+      capricorn: 'Disciplined, ambitious, and structured action. You value hard work.',
+      aquarius: 'Innovative, original, and unconventional drive. You seek social progress.',
+      pisces: 'Intuitive, imaginative, and gentle energy. You take action through creativity.'
     }
   },
   es: {
@@ -353,6 +412,9 @@ export const translations: Record<LanguageCode, TranslationSet> = {
     subtitle: 'Herramientas de utilidad profesional todo en uno. Calcula tu edad exacta, niveles de IMC y descuentos de compras al instante.',
     dobLabel: 'Fecha de Nacimiento',
     timezoneLabel: 'Zona Horaria',
+    birthTimeLabel: 'Hora de Nacimiento',
+    hourLabel: 'Hora',
+    minuteLabel: 'Minuto',
     calculateBtn: 'Calcular Edad',
     resultsTitle: 'Tu Edad Exacta',
     ageLabel: 'Edad',
@@ -363,6 +425,9 @@ export const translations: Record<LanguageCode, TranslationSet> = {
     hours: 'Horas',
     minutes: 'Minutos',
     seconds: 'Segundos',
+    dayLabel: 'Día',
+    monthLabel: 'Mes',
+    yearLabel: 'Año',
     nextBirthday: 'Próximo Cumpleaños',
     zodiacSign: 'Signo del Zodiaco',
     birthstone: 'Piedra de Nacimiento',
@@ -398,6 +463,7 @@ export const translations: Record<LanguageCode, TranslationSet> = {
     ageRangeSummary: 'Tu rango de edad está entre {min} y {max}.',
     easterDate: 'Fecha de Pascua {year}',
     targetYearLabel: 'Año Objetivo (Opcional)',
+    holidayCountdownLabel: 'Cuenta regresiva para el feriado',
     bmiCalculator: 'Calculadora de IMC',
     discountCalculator: 'Calculadora de Descuento',
     weightLabel: 'Peso (kg)',
@@ -585,6 +651,48 @@ export const translations: Record<LanguageCode, TranslationSet> = {
       capricorn: 'Proyectas una personalidad disciplinada, ambiciosa y seria. Los demás te ven como alguien responsable, profesional y que valora el logro. Abordas el mundo con una mentalidad práctica y estructurada.',
       aquarius: 'Proyectas una personalidad innovadora, independiente y única. Los demás te ven como alguien progresista, intelectual y que valora los ideales humanitarios. Abordas el mundo con ideas originales.',
       pisces: 'Proyectas una personalidad compasiva, imaginativa e intuitiva. Los demás te ven como alguien empático, sensible y con una naturaleza mística. Abordas el mundo con una presencia soñadora y gentil.'
+    },
+    mercurySignInterpretations: {
+      aries: 'Comunicación directa, rápida y asertiva. Piensas rápido y dices lo que piensas.',
+      taurus: 'Pensamiento práctico, constante y deliberado. Valoras los hechos concretos y la lógica.',
+      gemini: 'Versátil, curioso y muy comunicativo. Procesas la información rápidamente.',
+      cancer: 'Memoria intuitiva, emocional y retentiva. Tu pensamiento está ligado a los sentimientos.',
+      leo: 'Comunicación creativa, expresiva y segura. Hablas con autoridad.',
+      virgo: 'Analítico, preciso y orientado al detalle. Buscas orden y claridad en el pensamiento.',
+      libra: 'Diplomático, equilibrado y justo. Buscas la armonía en la comunicación.',
+      scorpio: 'Pensamiento intenso, investigador y profundo. Buscas descubrir verdades ocultas.',
+      sagittarius: 'Optimista, filosófico y de mente abierta. Buscas la verdad y la expansión.',
+      capricorn: 'Pensamiento disciplinado, estructurado y práctico. Valoras la lógica y la tradición.',
+      aquarius: 'Innovador, original y poco convencional. Piensas fuera de lo común.',
+      pisces: 'Intuitivo, imaginativo y poético. Tu pensamiento es fluido y sensible.'
+    },
+    venusSignInterpretations: {
+      aries: 'Apasionado, directo e independiente en el amor. Valoras la emoción y la iniciativa.',
+      taurus: 'Sensual, leal y que busca estabilidad. Valoras la comodidad y el contacto físico.',
+      gemini: 'Versátil, social y comunicativo. Valoras la conexión intelectual y la variedad.',
+      cancer: 'Protector, sensible y que busca seguridad. Valoras el hogar y la profundidad emocional.',
+      leo: 'Dramático, generoso y que busca aprecio. Valoras la calidez y la creatividad.',
+      virgo: 'Práctico, servicial y que busca mejorar. Valoras el servicio y el orden en el amor.',
+      libra: 'Diplomático, artístico y que busca equilibrio. Valoras la armonía y la asociación.',
+      scorpio: 'Intenso, privado y transformador. Valoras la verdad emocional profunda y la lealtad.',
+      sagittarius: 'Aventurero, amante de la libertad y optimista. Valoras el crecimiento y la exploración.',
+      capricorn: 'Serio, disciplinado y que busca el logro. Valoras la tradición y la integridad.',
+      aquarius: 'Independiente, único y humanitario. Valoras la amistad y las ideas originales.',
+      pisces: 'Compasivo, imaginativo e intuitivo. Valoras la conexión espiritual y la belleza.'
+    },
+    marsSignInterpretations: {
+      aries: 'Acción dinámica, valiente y directa. Tienes un fuerte impulso de liderazgo.',
+      taurus: 'Energía constante, persistente y práctica. Posees una gran resistencia.',
+      gemini: 'Energía versátil, comunicativa e inquieta. Prosperas con la variedad y el cambio.',
+      cancer: 'Impulso intuitivo, protector y emocional. Actúas basándote en los sentimientos.',
+      leo: 'Energía creativa, segura y dramática. Buscas inspirar y ser reconocido.',
+      virgo: 'Acción analítica, eficiente y orientada al detalle. Buscas orden y servicio.',
+      libra: 'Diplomático, equilibrado y que busca armonía. Actúas a través de la asociación.',
+      scorpio: 'Impulso intenso, poderoso y transformador. Posees una voluntad fuerte.',
+      sagittarius: 'Energía optimista, aventurera y amante de la libertad. Buscas la verdad.',
+      capricorn: 'Acción disciplinada, ambiciosa y estructurada. Valoras el trabajo duro.',
+      aquarius: 'Impulso innovador, original y poco convencional. Buscas el progreso social.',
+      pisces: 'Energía intuitiva, imaginativa y gentil. Actúas a través de la creatividad.'
     }
   },
   fr: {
@@ -592,6 +700,9 @@ export const translations: Record<LanguageCode, TranslationSet> = {
     subtitle: 'Outils utilitaires professionnels tout-en-un. Calculez votre âge exact, vos niveaux de forme physique IMC et vos remises d\'achat instantanément.',
     dobLabel: 'Date de Naissance',
     timezoneLabel: 'Fuseau Horaire',
+    birthTimeLabel: 'Heure de Naissance',
+    hourLabel: 'Heure',
+    minuteLabel: 'Minute',
     calculateBtn: 'Calculer l\'Âge',
     resultsTitle: 'Votre Âge Exact',
     ageLabel: 'Âge',
@@ -602,6 +713,9 @@ export const translations: Record<LanguageCode, TranslationSet> = {
     hours: 'Heures',
     minutes: 'Minutes',
     seconds: 'Secondes',
+    dayLabel: 'Jour',
+    monthLabel: 'Mois',
+    yearLabel: 'Année',
     nextBirthday: 'Prochain Anniversaire',
     zodiacSign: 'Signe du Zodiaque',
     birthstone: 'Pierre de Naissance',
@@ -637,6 +751,7 @@ export const translations: Record<LanguageCode, TranslationSet> = {
     ageRangeSummary: 'Votre tranche d\'âge se situe entre {min} et {max}.',
     easterDate: 'Date de Pâques {year}',
     targetYearLabel: 'Année Cible (Optionnel)',
+    holidayCountdownLabel: 'Compte à rebours jusqu\'au jour férié',
     bmiCalculator: 'Calculateur d\'IMC',
     discountCalculator: 'Calculateur de Remise',
     weightLabel: 'Poids (kg)',
@@ -824,6 +939,48 @@ export const translations: Record<LanguageCode, TranslationSet> = {
       capricorn: 'Vous projetez une personnalité disciplinée, ambitieuse et sérieuse. Les autres vous voient comme responsable, professionnel et comme quelqu\'un qui valorise la réussite. Vous abordez le monde avec un état d\'esprit pratique et structuré.',
       aquarius: 'Vous projetez une personnalité innovante, indépendante et unique. Les autres vous voient comme progressiste, intellectuel et comme quelqu\'un qui valorise les idéaux humanitaires. Vous abordez le monde avec des idées originales.',
       pisces: 'Vous projetez une personnalité compatissante, imaginative et intuitive. Les autres vous voient comme empathique, sensible et doté d\'une nature mystique. Vous abordez le monde avec une présence rêveuse et douce.'
+    },
+    mercurySignInterpretations: {
+      aries: 'Direct, quick, and assertive communication. You think fast and speak your mind.',
+      taurus: 'Practical, steady, and deliberate thinking. You value concrete facts and logic.',
+      gemini: 'Versatile, curious, and highly communicative. You process information rapidly.',
+      cancer: 'Intuitive, emotional, and retentive memory. Your thinking is tied to feelings.',
+      leo: 'Creative, expressive, and confident communication. You speak with authority.',
+      virgo: 'Analytical, precise, and detail-oriented. You seek order and clarity in thought.',
+      libra: 'Diplomatic, balanced, and fair-minded. You seek harmony in communication.',
+      scorpio: 'Intense, investigative, and deep thinking. You seek to uncover hidden truths.',
+      sagittarius: 'Optimistic, philosophical, and broad-minded. You seek truth and expansion.',
+      capricorn: 'Disciplined, structured, and practical thinking. You value logic and tradition.',
+      aquarius: 'Innovative, original, and unconventional. You think outside the box.',
+      pisces: 'Intuitive, imaginative, and poetic. Your thinking is fluid and sensitive.'
+    },
+    venusSignInterpretations: {
+      aries: 'Passionate, direct, and independent in love. You value excitement and initiative.',
+      taurus: 'Sensual, loyal, and seeking stability. You value comfort and physical touch.',
+      gemini: 'Versatile, social, and communicative. You value intellectual connection and variety.',
+      cancer: 'Nurturing, sensitive, and seeking security. You value home and emotional depth.',
+      leo: 'Dramatic, generous, and seeking appreciation. You value warmth and creativity.',
+      virgo: 'Practical, helpful, and seeking improvement. You value service and order in love.',
+      libra: 'Diplomatic, artistic, and seeking balance. You value harmony and partnership.',
+      scorpio: 'Intense, private, and transformative. You value deep emotional truth and loyalty.',
+      sagittarius: 'Adventurous, freedom-loving, and optimistic. You value growth and exploration.',
+      capricorn: 'Serious, disciplined, and seeking achievement. You value tradition and integrity.',
+      aquarius: 'Independent, unique, and humanitarian. You value friendship and original ideas.',
+      pisces: 'Compassionate, imaginative, and intuitive. You value spiritual connection and beauty.'
+    },
+    marsSignInterpretations: {
+      aries: 'Dynamic, courageous, and direct action. You have a strong drive for leadership.',
+      taurus: 'Steady, persistent, and practical energy. You possess great endurance.',
+      gemini: 'Versatile, communicative, and restless energy. You thrive on variety and change.',
+      cancer: 'Intuitive, protective, and emotional drive. You take action based on feelings.',
+      leo: 'Creative, confident, and dramatic energy. You seek to inspire and be recognized.',
+      virgo: 'Analytical, efficient, and detail-oriented action. You seek order and service.',
+      libra: 'Diplomatic, balanced, and seeking harmony. You take action through partnership.',
+      scorpio: 'Intense, powerful, and transformative drive. You possess a strong will.',
+      sagittarius: 'Optimistic, adventurous, and freedom-loving energy. You seek truth.',
+      capricorn: 'Disciplined, ambitious, and structured action. You value hard work.',
+      aquarius: 'Innovative, original, and unconventional drive. You seek social progress.',
+      pisces: 'Intuitive, imaginative, and gentle energy. You take action through creativity.'
     }
   },
   de: {
@@ -831,6 +988,9 @@ export const translations: Record<LanguageCode, TranslationSet> = {
     subtitle: 'All-in-One-Profi-Utility-Tools. Berechnen Sie sofort Ihr genaues Alter, Ihren BMI-Fitnesslevel und Ihre Einkaufsrabatte.',
     dobLabel: 'Geburtsdatum',
     timezoneLabel: 'Zeitzone',
+    birthTimeLabel: 'Geburtszeit',
+    hourLabel: 'Stunde',
+    minuteLabel: 'Minute',
     calculateBtn: 'Alter berechnen',
     resultsTitle: 'Ihr genaues Alter',
     ageLabel: 'Alter',
@@ -841,6 +1001,9 @@ export const translations: Record<LanguageCode, TranslationSet> = {
     hours: 'Stunden',
     minutes: 'Minuten',
     seconds: 'Sekunden',
+    dayLabel: 'Tag',
+    monthLabel: 'Monat',
+    yearLabel: 'Jahr',
     nextBirthday: 'Nächster Geburtstag',
     zodiacSign: 'Sternzeichen',
     birthstone: 'Geburtsstein',
@@ -876,6 +1039,7 @@ export const translations: Record<LanguageCode, TranslationSet> = {
     ageRangeSummary: 'Ihr Altersbereich liegt zwischen {min} und {max}.',
     easterDate: 'Osterdatum {year}',
     targetYearLabel: 'Zieljahr (Optional)',
+    holidayCountdownLabel: 'Countdown zum Feiertag',
     bmiCalculator: 'BMI-Rechner',
     discountCalculator: 'Rabattrechner',
     weightLabel: 'Gewicht (kg)',
@@ -954,7 +1118,7 @@ export const translations: Record<LanguageCode, TranslationSet> = {
       gemini: 'Vielseitig, ausdrucksstark und neugierig. Sie sind intellektuelle Chamäleons, die von Abwechslung, Kommunikation und dem Austausch von Ideen leben.',
       cancer: 'Intuitiv, sentimental und mitfühlend. Sie sind tief mit Heim und Familie verbunden, besitzen eine beschützende Natur und große emotionale Tiefe.',
       leo: 'Dramatisch, kontaktfreudig und selbstbewusst. Sie sind natürliche Anführer, die Wärme und Kreativität ausstrahlen und danach streben, zu inspirieren und für ihre Gaben anerkannt zu werden.',
-      virgo: 'Loyal, analytical, and kind. They are meticulous perfectionists who seek to understand the world through order, health, and a desire to be of service.',
+      virgo: 'Loyal, analytisch und freundlich. Sie sind akribische Perfektionisten, die versuchen, die Welt durch Ordnung, Gesundheit und den Wunsch, nützlich zu sein, zu verstehen.',
       libra: 'Diplomatisch, künstlerisch und intelligent. Sie suchen in allen Dingen nach Gleichgewicht und Harmonie und schätzen Partnerschaft, Fairness und ästhetische Schönheit.',
       scorpio: 'Leidenschaftlich, stur und einfallsreich. Sie sind intensiv und transformativ, besitzen eine magnetische Präsenz und das Bedürfnis, verborgene Wahrheiten aufzudecken.',
       sagittarius: 'Extrovertiert, optimistisch und lustig. Sie sind philosophische Abenteurer, die durch Reisen, Lernen und Freiheit nach Wahrheit und Erweiterung suchen.',
@@ -1063,6 +1227,48 @@ export const translations: Record<LanguageCode, TranslationSet> = {
       capricorn: 'Sie projizieren eine disziplinierte, ehrgeizige und ernsthafte Persönlichkeit. Andere sehen Sie als verantwortlich, professionell und als jemanden, der Leistung schätzt. Sie gehen auf die Welt mit einer praktischen und strukturierten Denkweise zu.',
       aquarius: 'Sie projizieren eine innovative, unabhängige und einzigartige Persönlichkeit. Andere sehen Sie als progressiv, intellektuell und als jemanden, der humanitäre Ideale schätzt. Sie gehen auf die Welt mit originellen Ideen zu.',
       pisces: 'Sie projizieren eine mitfühlende, fantasievolle und intuitive Persönlichkeit. Andere sehen Sie als empathisch, sensibel und mit einer mystischen Natur. Sie gehen auf die Welt mit einer verträumten und sanften Präsenz zu.'
+    },
+    mercurySignInterpretations: {
+      aries: 'Direkte, schnelle und durchsetzungsstarke Kommunikation. Sie denken schnell und sagen, was Sie denken.',
+      taurus: 'Praktisches, stetiges und bewusstes Denken. Sie schätzen konkrete Fakten und Logik.',
+      gemini: 'Vielseitig, neugierig und sehr kommunikativ. Sie verarbeiten Informationen schnell.',
+      cancer: 'Intuitives, emotionales und ausgeprägtes Erinnerungsvermögen. Ihr Denken ist an Gefühle gebunden.',
+      leo: 'Kreative, ausdrucksstarke und selbstbewusste Kommunikation. Sie sprechen mit Autorität.',
+      virgo: 'Analytisch, präzise und detailorientiert. Sie suchen Ordnung und Klarheit im Denken.',
+      libra: 'Diplomatisch, ausgewogen und unvoreingenommen. Sie suchen Harmonie in der Kommunikation.',
+      scorpio: 'Intensives, investigatives und tiefgründiges Denken. Sie versuchen, verborgene Wahrheiten aufzudecken.',
+      sagittarius: 'Optimistisches, philosophisches und weitsichtiges Denken. Sie suchen Wahrheit und Erweiterung.',
+      capricorn: 'Diszipliniertes, strukturiertes und praktisches Denken. Sie schätzen Logik und Tradition.',
+      aquarius: 'Innovativ, originell und unkonventionell. Sie denken über den Tellerrand hinaus.',
+      pisces: 'Intuitiv, fantasievoll und poetisch. Ihr Denken ist fließend und sensibel.'
+    },
+    venusSignInterpretations: {
+      aries: 'Leidenschaftlich, direkt und unabhängig in der Liebe. Sie schätzen Aufregung und Initiative.',
+      taurus: 'Sinnlich, loyal und auf der Suche nach Stabilität. Sie schätzen Komfort und körperliche Berührung.',
+      gemini: 'Vielseitig, sozial und kommunikativ. Sie schätzen intellektuelle Verbindung und Abwechslung.',
+      cancer: 'Fürsorglich, sensibel und auf der Suche nach Sicherheit. Sie schätzen das Zuhause und emotionale Tiefe.',
+      leo: 'Dramatisch, großzügig und auf der Suche nach Anerkennung. Sie schätzen Wärme und Kreativität.',
+      virgo: 'Praktisch, hilfreich und auf der Suche nach Verbesserung. Sie schätzen Dienst und Ordnung in der Liebe.',
+      libra: 'Diplomatisch, künstlerisch und auf der Suche nach Gleichgewicht. Sie schätzen Harmonie und Partnerschaft.',
+      scorpio: 'Intensiv, privat und transformativ. Sie schätzen tiefe emotionale Wahrheit und Loyalität.',
+      sagittarius: 'Abenteuerlustig, freiheitsliebend und optimistisch. Sie schätzen Wachstum und Erkundung.',
+      capricorn: 'Ernsthaft, diszipliniert und auf der Suche nach Leistung. Sie schätzen Tradition und Integrität.',
+      aquarius: 'Unabhängig, einzigartig und humanitär. Sie schätzen Freundschaft und originelle Ideen.',
+      pisces: 'Mitfühlend, fantasievoll und intuitiv. Sie schätzen spirituelle Verbindung und Schönheit.'
+    },
+    marsSignInterpretations: {
+      aries: 'Dynamisches, mutiges und direktes Handeln. Sie haben einen starken Drang zur Führung.',
+      taurus: 'Stetige, beharrliche und praktische Energie. Sie besitzen große Ausdauer.',
+      gemini: 'Vielseitige, kommunikative und rastlose Energie. Sie blühen bei Abwechslung und Veränderung auf.',
+      cancer: 'Intuitiver, beschützender und emotionaler Antrieb. Sie handeln basierend auf Gefühlen.',
+      leo: 'Kreative, selbstbewusste und dramatische Energie. Sie versuchen zu inspirieren und anerkannt zu werden.',
+      virgo: 'Analytisches, effizientes und detailorientiertes Handeln. Sie suchen Ordnung und Dienst.',
+      libra: 'Diplomatisch, ausgewogen und auf der Suche nach Harmonie. Sie handeln durch Partnerschaft.',
+      scorpio: 'Intensiver, kraftvoller und transformativer Antrieb. Sie besitzen einen starken Willen.',
+      sagittarius: 'Optimistische, abenteuerlustige und freiheitsliebende Energie. Sie suchen die Wahrheit.',
+      capricorn: 'Diszipliniertes, ehrgeiziges und strukturiertes Handeln. Sie schätzen harte Arbeit.',
+      aquarius: 'Innovativer, origineller und unkonventioneller Antrieb. Sie suchen sozialen Fortschritt.',
+      pisces: 'Intuitive, fantasievolle und sanfte Energie. Sie handeln durch Kreativität.'
     }
   },
   hi: {
@@ -1070,6 +1276,9 @@ export const translations: Record<LanguageCode, TranslationSet> = {
     subtitle: 'ऑल-इन-वन पेशेवर उपयोगिता उपकरण। अपनी सटीक आयु, बीएमआई फिटनेस स्तर और खरीदारी छूट की तुरंत गणना करें।',
     dobLabel: 'जन्म तिथि',
     timezoneLabel: 'समय क्षेत्र',
+    birthTimeLabel: 'जन्म का समय',
+    hourLabel: 'घंटा',
+    minuteLabel: 'मिनट',
     calculateBtn: 'आयु की गणना करें',
     resultsTitle: 'आपकी सही आयु',
     ageLabel: 'आयु',
@@ -1080,6 +1289,9 @@ export const translations: Record<LanguageCode, TranslationSet> = {
     hours: 'घंटे',
     minutes: 'मिनट',
     seconds: 'सेकंड',
+    dayLabel: 'दिन',
+    monthLabel: 'महीना',
+    yearLabel: 'वर्ष',
     nextBirthday: 'अगला जन्मदिन',
     zodiacSign: 'राशि',
     birthstone: 'जन्म का रत्न',
@@ -1115,6 +1327,7 @@ export const translations: Record<LanguageCode, TranslationSet> = {
     ageRangeSummary: 'आपकी आयु सीमा {min} और {max} के बीच है।',
     easterDate: 'ईस्टर की तिथि {year}',
     targetYearLabel: 'लक्ष्य वर्ष (वैकल्पिक)',
+    holidayCountdownLabel: 'छुट्टी के लिए उलटी गिनती',
     bmiCalculator: 'बीएमआई कैलकुलेटर',
     discountCalculator: 'छूट कैलकुलेटर',
     weightLabel: 'वजन (किग्रा)',
@@ -1302,6 +1515,48 @@ export const translations: Record<LanguageCode, TranslationSet> = {
       capricorn: 'आप एक अनुशासित, महत्वाकांक्षी और गंभीर व्यक्तित्व पेश करते हैं। दूसरे आपको जिम्मेदार, पेशेवर और उपलब्धि को महत्व देने वाले व्यक्ति के रूप में देखते हैं। आप एक व्यावहारिक और संरचित मानसिकता के साथ दुनिया के करीब आते हैं।',
       aquarius: 'आप एक अभिनव, स्वतंत्र और अद्वितीय व्यक्तित्व पेश करते हैं। दूसरे आपको प्रगतिशील, बौद्धिक और मानवीय आदर्शों को महत्व देने वाले व्यक्ति के रूप में देखते हैं। आप मूल विचारों के साथ दुनिया के करीब आते हैं।',
       pisces: 'आप एक दयालु, कल्पनाशील और सहज व्यक्तित्व पेश करते हैं। दूसरे आपको सहानुभूति रखने वाले, संवेदनशील और रहस्यमय स्वभाव वाले व्यक्ति के रूप में देखते हैं। आप एक स्वप्निल और कोमल उपस्थिति के साथ दुनिया के करीब आते हैं।'
+    },
+    mercurySignInterpretations: {
+      aries: 'प्रत्यक्ष, त्वरित और मुखर संचार। आप तेजी से सोचते हैं और अपनी बात कहते हैं।',
+      taurus: 'व्यावहारिक, स्थिर और विचारशील सोच। आप ठोस तथ्यों और तर्क को महत्व देते हैं।',
+      gemini: 'बहुमुखी, जिज्ञासु और अत्यधिक संचारी। आप जानकारी को तेजी से संसाधित करते हैं।',
+      cancer: 'सहज, भावनात्मक और धारण करने वाली स्मृति। आपकी सोच भावनाओं से जुड़ी है।',
+      leo: 'रचनात्मक, अभिव्यंजक और आत्मविश्वासी संचार। आप अधिकार के साथ बोलते हैं।',
+      virgo: 'विश्लेषणात्मक, सटीक और विस्तार-उन्मुख। आप विचार में व्यवस्था और स्पष्टता चाहते हैं।',
+      libra: 'राजनयिक, संतुलित और निष्पक्ष। आप संचार में सद्भाव चाहते हैं।',
+      scorpio: 'तीव्र, खोजी और गहरी सोच। आप छिपी हुई सच्चाइयों को उजागर करना चाहते हैं।',
+      sagittarius: 'आशावादी, दार्शनिक और व्यापक सोच। आप सच्चाई और विस्तार चाहते हैं।',
+      capricorn: 'अनुशासित, संरचित और व्यावहारिक सोच। आप तर्क और परंपरा को महत्व देते हैं।',
+      aquarius: 'अभिनव, मौलिक और अपरंपरागत। आप लीक से हटकर सोचते हैं।',
+      pisces: 'सहज, कल्पनाशील और काव्यात्मक। आपकी सोच तरल और संवेदनशील है।'
+    },
+    venusSignInterpretations: {
+      aries: 'प्रेम में भावुक, प्रत्यक्ष और स्वतंत्र। आप उत्साह और पहल को महत्व देते हैं।',
+      taurus: 'कामुक, वफादार और स्थिरता की तलाश में। आप आराम और शारीरिक स्पर्श को महत्व देते हैं।',
+      gemini: 'बहुमुखी, सामाजिक और संचारी। आप बौद्धिक संबंध और विविधता को महत्व देते हैं।',
+      cancer: 'पोषण करने वाला, संवेदनशील और सुरक्षा की तलाश में। आप घर और भावनात्मक गहराई को महत्व देते हैं।',
+      leo: 'नाटकीय, उदार और प्रशंसा की तलाश में। आप गर्मजोशी और रचनात्मकता को महत्व देते हैं।',
+      virgo: 'व्यावहारिक, सहायक और सुधार की तलाश में। आप प्रेम में सेवा और व्यवस्था को महत्व देते हैं।',
+      libra: 'राजनयिक, कलात्मक और संतुलन की तलाश में। आप सद्भाव और साझेदारी को महत्व देते हैं।',
+      scorpio: 'तीव्र, निजी और परिवर्तनकारी। आप गहरी भावनात्मक सच्चाई और वफादारी को महत्व देते हैं।',
+      sagittarius: 'साहसी, स्वतंत्रता-प्रेमी और आशावादी। आप विकास और अन्वेषण को महत्व देते हैं।',
+      capricorn: 'गंभीर, अनुशासित और उपलब्धि की तलाश में। आप परंपरा और अखंडता को महत्व देते हैं।',
+      aquarius: 'स्वतंत्र, अद्वितीय और मानवीय। आप मित्रता और मूल विचारों को महत्व देते हैं।',
+      pisces: 'दयालु, कल्पनाशील और सहज। आप आध्यात्मिक संबंध और सुंदरता को महत्व देते हैं।'
+    },
+    marsSignInterpretations: {
+      aries: 'गतिशील, साहसी और प्रत्यक्ष कार्रवाई। आपके पास नेतृत्व के लिए एक मजबूत प्रेरणा है।',
+      taurus: 'स्थिर, निरंतर और व्यावहारिक ऊर्जा। आपके पास महान सहनशक्ति है।',
+      gemini: 'बहुमुखी, संचारी और बेचैन ऊर्जा। आप विविधता और परिवर्तन पर फलते-फूलते हैं।',
+      cancer: 'सहज, सुरक्षात्मक और भावनात्मक प्रेरणा। आप भावनाओं के आधार पर कार्रवाई करते हैं।',
+      leo: 'रचनात्मक, आत्मविश्वासी और नाटकीय ऊर्जा। आप प्रेरित करने और पहचाने जाने की तलाश करते हैं।',
+      virgo: 'विश्लेषणात्मक, कुशल और विस्तार-उन्मुख कार्रवाई। आप व्यवस्था और सेवा चाहते हैं।',
+      libra: 'राजनयिक, संतुलित और सद्भाव की तलाश में। आप साझेदारी के माध्यम से कार्रवाई करते हैं।',
+      scorpio: 'तीव्र, शक्तिशाली और परिवर्तनकारी प्रेरणा। आपके पास एक मजबूत इच्छाशक्ति है।',
+      sagittarius: 'आशावादी, साहसी और स्वतंत्रता-प्रेमी ऊर्जा। आप सच्चाई की तलाश करते हैं।',
+      capricorn: 'अनुशासित, महत्वाकांक्षी और संरचित कार्रवाई। आप कड़ी मेहनत को महत्व देते हैं।',
+      aquarius: 'अभिनव, मौलिक और अपरंपरागत प्रेरणा। आप सामाजिक प्रगति चाहते हैं।',
+      pisces: 'सहज, कल्पनाशील और कोमल ऊर्जा। आप रचनात्मकता के माध्यम से कार्रवाई करते हैं।'
     }
   }
 };
