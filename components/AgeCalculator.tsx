@@ -205,54 +205,54 @@ const AgeCalculator: React.FC = () => {
   };
 
   const handleCalculate = useCallback((showError = false) => {
-    setError(null);
-    setValidationErrors({});
-    setResult(null);
-    setAgeRange(null);
-    setCompareResult(null);
-
-    const newValidationErrors: Record<string, string> = {};
-
-    // Validate Birth Date
-    if (isInvalid('day', birthDay, birthMonth, birthYear)) newValidationErrors.birthDay = t.errorInvalidDate;
-    if (isInvalid('month', birthMonth)) newValidationErrors.birthMonth = t.errorInvalidDate;
-    if (isInvalid('year', birthYear)) newValidationErrors.birthYear = t.errorInvalidDate;
-    if (isInvalid('hour', birthHour)) newValidationErrors.birthHour = t.errorInvalidDate;
-    if (isInvalid('minute', birthMinute)) newValidationErrors.birthMinute = t.errorInvalidDate;
-
-    const birthDate = parseDate(birthDay, birthMonth, birthYear, birthHour, birthMinute);
-    if (!birthDate) {
-      if (showError) setError(t.errorInvalidDate);
-      setValidationErrors(newValidationErrors);
-      return;
-    }
-
-    // Validate Range End if provided
-    let birthDateEnd: Date | null = null;
-    if (endDay || endMonth || endYear) {
-      birthDateEnd = parseDate(endDay, endMonth, endYear, endHour, endMinute);
-      if (!birthDateEnd) {
-        if (showError) setError(t.errorInvalidDate);
-        return;
-      }
-    }
-
-    // Validate Holiday if provided
-    let holiday: Date | null = null;
-    if (holidayDay || holidayMonth || holidayYear) {
-      holiday = parseDate(holidayDay, holidayMonth, holidayYear, holidayHour, holidayMinute);
-      if (!holiday) {
-        if (showError) setError(t.errorInvalidDate);
-        return;
-      }
-    }
-
-    if (targetYear && (isNaN(Number(targetYear)) || Number(targetYear) < 1 || Number(targetYear) > 9999)) {
-      setError(t.errorInvalidYear);
-      return;
-    }
-
     try {
+      setError(null);
+      setValidationErrors({});
+      setResult(null);
+      setAgeRange(null);
+      setCompareResult(null);
+
+      const newValidationErrors: Record<string, string> = {};
+
+      // Validate Birth Date
+      if (isInvalid('day', birthDay, birthMonth, birthYear)) newValidationErrors.birthDay = t.errorInvalidDate;
+      if (isInvalid('month', birthMonth)) newValidationErrors.birthMonth = t.errorInvalidDate;
+      if (isInvalid('year', birthYear)) newValidationErrors.birthYear = t.errorInvalidDate;
+      if (isInvalid('hour', birthHour)) newValidationErrors.birthHour = t.errorInvalidDate;
+      if (isInvalid('minute', birthMinute)) newValidationErrors.birthMinute = t.errorInvalidDate;
+
+      const birthDate = parseDate(birthDay, birthMonth, birthYear, birthHour, birthMinute);
+      if (!birthDate) {
+        if (showError) setError(t.errorInvalidDate);
+        setValidationErrors(newValidationErrors);
+        return;
+      }
+
+      // Validate Range End if provided
+      let birthDateEnd: Date | null = null;
+      if (endDay || endMonth || endYear) {
+        birthDateEnd = parseDate(endDay, endMonth, endYear, endHour, endMinute);
+        if (!birthDateEnd) {
+          if (showError) setError(t.errorInvalidDate);
+          return;
+        }
+      }
+
+      // Validate Holiday if provided
+      let holiday: Date | null = null;
+      if (holidayDay || holidayMonth || holidayYear) {
+        holiday = parseDate(holidayDay, holidayMonth, holidayYear, holidayHour, holidayMinute);
+        if (!holiday) {
+          if (showError) setError(t.errorInvalidDate);
+          return;
+        }
+      }
+
+      if (targetYear && (isNaN(Number(targetYear)) || Number(targetYear) < 1 || Number(targetYear) > 9999)) {
+        setError(t.errorInvalidYear);
+        return;
+      }
+
       const baseDate = targetYear ? new Date(Number(targetYear), 11, 31, 23, 59, 59) : new Date();
       
       let nowInTimezone: Date;
@@ -316,7 +316,7 @@ const AgeCalculator: React.FC = () => {
         setHolidayDate(null);
       }
     } catch (err) {
-      console.error(err);
+      console.error('Calculation error:', err);
       setError(t.errorInvalidDate);
     }
   }, [birthDay, birthMonth, birthYear, birthHour, birthMinute, endDay, endMonth, endYear, endHour, endMinute, holidayDay, holidayMonth, holidayYear, holidayHour, holidayMinute, targetYear, timezone, t]);
@@ -370,24 +370,29 @@ const AgeCalculator: React.FC = () => {
   };
 
   const handleCompareDates = () => {
-    setError(null);
-    setValidationErrors({});
-    setResult(null);
-    setAgeRange(null);
-    setCompareResult(null);
+    try {
+      setError(null);
+      setValidationErrors({});
+      setResult(null);
+      setAgeRange(null);
+      setCompareResult(null);
 
-    const d1 = parseDate(comp1Day, comp1Month, comp1Year, comp1Hour, comp1Minute);
-    const d2 = parseDate(comp2Day, comp2Month, comp2Year, comp2Hour, comp2Minute);
+      const d1 = parseDate(comp1Day, comp1Month, comp1Year, comp1Hour, comp1Minute);
+      const d2 = parseDate(comp2Day, comp2Month, comp2Year, comp2Hour, comp2Minute);
 
-    if (!d1 || !d2) {
+      if (!d1 || !d2) {
+        setError(t.errorInvalidDate);
+        return;
+      }
+
+      const diff = calculateAge(d1, d2);
+      setCompareResult(diff);
+      setCompareDate1(d1);
+      setCompareDate2(d2);
+    } catch (err) {
+      console.error('Comparison error:', err);
       setError(t.errorInvalidDate);
-      return;
     }
-
-    const diff = calculateAge(d1, d2);
-    setCompareResult(diff);
-    setCompareDate1(d1);
-    setCompareDate2(d2);
   };
 
   const handleShare = async () => {
@@ -1152,6 +1157,47 @@ const AgeCalculator: React.FC = () => {
               <StatCard icon={Diamond} label={t.birthstone} value={t.birthstones[result.birthstone] || result.birthstone} color="bg-cyan-500" delay={0.45} />
               <StatCard icon={Sparkles} label={t.chineseZodiacLabel} value={t.chineseZodiacSigns[result.chineseZodiac]} color="bg-red-600" delay={0.48} />
               <StatCard icon={Moon} label={t.lunarPhaseLabel} value={t.lunarPhases[result.lunarPhase]} color="bg-slate-700" delay={0.5} />
+            </div>
+
+            {/* The Big Three Summary */}
+            <div className="space-y-4">
+              <h3 className="text-xl font-black tracking-tight flex items-center gap-2">
+                <Sparkles className="text-blue-500" size={16} />
+                {t.birthChartTitle} - The Big Three
+              </h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {[
+                  { label: t.sunSignLabel, sign: result.birthChart.sunSign, icon: Star, color: 'text-orange-500', bgColor: 'bg-orange-500/10', borderColor: 'border-orange-500/30', meaning: t.planetMeanings.sun },
+                  { label: t.moonSignLabel, sign: result.birthChart.moonSign, icon: Moon, color: 'text-indigo-500', bgColor: 'bg-indigo-500/10', borderColor: 'border-indigo-500/30', meaning: t.planetMeanings.moon },
+                  { label: t.risingSignLabel, sign: result.birthChart.risingSign, icon: ArrowUpRight, color: 'text-emerald-500', bgColor: 'bg-emerald-500/10', borderColor: 'border-emerald-500/30', meaning: t.planetMeanings.rising },
+                ].map((item, idx) => (
+                  <motion.div
+                    key={item.label}
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.5 + idx * 0.1 }}
+                    className={`p-6 rounded-3xl glass-card border-t-4 ${item.borderColor} flex flex-col gap-3 transition-all hover:scale-[1.02]`}
+                  >
+                    <div className="flex items-center gap-3">
+                      <div className={`p-2.5 rounded-xl ${item.bgColor} ${item.color}`}>
+                        <item.icon size={20} />
+                      </div>
+                      <div>
+                        <div className={`text-[10px] font-bold uppercase tracking-widest opacity-60`}>{item.label}</div>
+                        <div className="text-xl font-black tracking-tight">{t.zodiacSigns[item.sign]}</div>
+                      </div>
+                    </div>
+                    <div className="space-y-2">
+                      <p className={`text-[11px] leading-relaxed font-bold ${darkMode ? 'text-blue-300' : 'text-blue-600'}`}>
+                        {item.meaning}
+                      </p>
+                      <p className={`text-xs leading-relaxed ${darkMode ? 'text-gray-400' : 'text-gray-600'} italic`}>
+                        {t.zodiacDescriptions[item.sign]}
+                      </p>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
             </div>
 
             {/* Life Stats */}
