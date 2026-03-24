@@ -59,7 +59,10 @@ const Navbar: React.FC<NavbarProps> = ({ activeTool, setActiveTool }) => {
 
         <div className="flex items-center gap-2">
           <div className="relative group">
-            <button className={`p-2.5 rounded-xl transition-all ${darkMode ? 'bg-slate-900 text-slate-400 hover:text-white' : 'bg-slate-100 text-slate-600 hover:text-slate-900'}`}>
+            <button 
+              title={t.tooltips.language}
+              className={`p-2.5 rounded-xl transition-all ${darkMode ? 'bg-slate-900 text-slate-400 hover:text-white' : 'bg-slate-100 text-slate-600 hover:text-slate-900'}`}
+            >
               <Globe size={14} />
             </button>
             <div className={`absolute right-0 top-full mt-2 p-2 rounded-2xl shadow-2xl opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 min-w-[140px] border ${
@@ -82,6 +85,7 @@ const Navbar: React.FC<NavbarProps> = ({ activeTool, setActiveTool }) => {
           </div>
           <button
             onClick={toggleDarkMode}
+            title={t.tooltips.theme}
             className={`p-2.5 rounded-xl transition-all ${darkMode ? 'bg-slate-900 text-yellow-400' : 'bg-slate-100 text-slate-600'}`}
           >
             {darkMode ? <Sun size={14} /> : <Moon size={14} />}

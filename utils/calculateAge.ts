@@ -45,6 +45,21 @@ export interface AgeResult extends DateDiffResult {
     mars: string;
     marsDegree: number;
     marsHouse: number;
+    jupiter: string;
+    jupiterDegree: number;
+    jupiterHouse: number;
+    saturn: string;
+    saturnDegree: number;
+    saturnHouse: number;
+    uranus: string;
+    uranusDegree: number;
+    uranusHouse: number;
+    neptune: string;
+    neptuneDegree: number;
+    neptuneHouse: number;
+    pluto: string;
+    plutoDegree: number;
+    plutoHouse: number;
   };
   houses: string[];
   aspects: {
@@ -224,7 +239,7 @@ export const calculateAge = (dob: Date, now: Date = new Date()): AgeResult => {
 
   // Chinese Zodiac (Approximate based on year)
   const chineseZodiacSigns = ["rat", "ox", "tiger", "rabbit", "dragon", "snake", "horse", "goat", "monkey", "rooster", "dog", "pig"];
-  const chineseZodiac = chineseZodiacSigns[(dob.getFullYear() - 4) % 12];
+  const chineseZodiac = chineseZodiacSigns[((dob.getFullYear() - 4) % 12 + 12) % 12];
 
   // Lunar Phase (Approximate cycle 29.53 days)
   // New Moon Jan 6, 2000
@@ -248,38 +263,56 @@ export const calculateAge = (dob: Date, now: Date = new Date()): AgeResult => {
     "libra", "scorpio", "sagittarius", "capricorn", "aquarius", "pisces"
   ];
   
-  const sunSignIndex = signs.indexOf(zodiacSign);
+  const wrapIndex = (i: number) => ((i % 12) + 12) % 12;
+  
+  const sunSignIndex = wrapIndex(signs.indexOf(zodiacSign));
   
   // Moon Sign Approximation (Cycle of ~27.32 days)
   const refDate = new Date(2000, 0, 1);
   const daysSinceRef = (dob.getTime() - refDate.getTime()) / (1000 * 60 * 60 * 24);
   const moonDaysPerSign = 27.32 / 12;
-  const moonSignIndex = (Math.floor(daysSinceRef / moonDaysPerSign) + 6 + 1200) % 12;
+  const moonSignIndex = wrapIndex(Math.floor(daysSinceRef / moonDaysPerSign) + 6);
   const moonSign = signs[moonSignIndex];
-  const moonDegree = Math.floor((daysSinceRef % moonDaysPerSign) / moonDaysPerSign * 30);
+  const moonDegree = Math.floor((Math.abs(daysSinceRef) % moonDaysPerSign) / moonDaysPerSign * 30);
 
   // Rising Sign Approximation (Depends on Sun sign and birth time)
   const birthTimeInHours = dob.getHours() + dob.getMinutes() / 60;
-  const risingSignIndex = (sunSignIndex + Math.floor((birthTimeInHours - 6 + 24) / 2)) % 12;
+  const risingSignIndex = wrapIndex(sunSignIndex + Math.floor((birthTimeInHours - 6 + 24) / 2));
   const risingSign = signs[risingSignIndex];
   const risingDegree = Math.floor(((birthTimeInHours - 6 + 24) % 2) / 2 * 30);
 
   // For each planet, calculate its house (Simplified: 1st house starts at Rising Sign)
-  const getHouse = (planetSignIndex: number) => (planetSignIndex - risingSignIndex + 12) % 12 + 1;
+  const getHouse = (planetSignIndex: number) => wrapIndex(planetSignIndex - risingSignIndex) + 1;
 
   // Planetary Positions (Simplified approximations based on orbital periods)
   // Mercury: ~88 days, Venus: ~225 days, Mars: ~687 days
+  // Jupiter: ~4333 days, Saturn: ~10759 days, Uranus: ~30687 days, Neptune: ~60190 days, Pluto: ~90560 days
   const mercuryDaysPerSign = 88 / 12;
   const venusDaysPerSign = 225 / 12;
   const marsDaysPerSign = 687 / 12;
+  const jupiterDaysPerSign = 4333 / 12;
+  const saturnDaysPerSign = 10759 / 12;
+  const uranusDaysPerSign = 30687 / 12;
+  const neptuneDaysPerSign = 60190 / 12;
+  const plutoDaysPerSign = 90560 / 12;
 
-  const mercurySignIndex = (Math.floor(daysSinceRef / mercuryDaysPerSign) + 9 + 1200) % 12;
-  const venusSignIndex = (Math.floor(daysSinceRef / venusDaysPerSign) + 10 + 1200) % 12;
-  const marsSignIndex = (Math.floor(daysSinceRef / marsDaysPerSign) + 5 + 1200) % 12;
+  const mercurySignIndex = wrapIndex(Math.floor(daysSinceRef / mercuryDaysPerSign) + 9);
+  const venusSignIndex = wrapIndex(Math.floor(daysSinceRef / venusDaysPerSign) + 10);
+  const marsSignIndex = wrapIndex(Math.floor(daysSinceRef / marsDaysPerSign) + 5);
+  const jupiterSignIndex = wrapIndex(Math.floor(daysSinceRef / jupiterDaysPerSign) + 1);
+  const saturnSignIndex = wrapIndex(Math.floor(daysSinceRef / saturnDaysPerSign) + 2);
+  const uranusSignIndex = wrapIndex(Math.floor(daysSinceRef / uranusDaysPerSign) + 3);
+  const neptuneSignIndex = wrapIndex(Math.floor(daysSinceRef / neptuneDaysPerSign) + 4);
+  const plutoSignIndex = wrapIndex(Math.floor(daysSinceRef / plutoDaysPerSign) + 5);
 
-  const mercuryDegree = Math.floor((daysSinceRef % mercuryDaysPerSign) / mercuryDaysPerSign * 30);
-  const venusDegree = Math.floor((daysSinceRef % venusDaysPerSign) / venusDaysPerSign * 30);
-  const marsDegree = Math.floor((daysSinceRef % marsDaysPerSign) / marsDaysPerSign * 30);
+  const mercuryDegree = Math.floor((Math.abs(daysSinceRef) % mercuryDaysPerSign) / mercuryDaysPerSign * 30);
+  const venusDegree = Math.floor((Math.abs(daysSinceRef) % venusDaysPerSign) / venusDaysPerSign * 30);
+  const marsDegree = Math.floor((Math.abs(daysSinceRef) % marsDaysPerSign) / marsDaysPerSign * 30);
+  const jupiterDegree = Math.floor((Math.abs(daysSinceRef) % jupiterDaysPerSign) / jupiterDaysPerSign * 30);
+  const saturnDegree = Math.floor((Math.abs(daysSinceRef) % saturnDaysPerSign) / saturnDaysPerSign * 30);
+  const uranusDegree = Math.floor((Math.abs(daysSinceRef) % uranusDaysPerSign) / uranusDaysPerSign * 30);
+  const neptuneDegree = Math.floor((Math.abs(daysSinceRef) % neptuneDaysPerSign) / neptuneDaysPerSign * 30);
+  const plutoDegree = Math.floor((Math.abs(daysSinceRef) % plutoDaysPerSign) / plutoDaysPerSign * 30);
 
   const planetaryPositions = {
     mercury: signs[mercurySignIndex],
@@ -290,7 +323,22 @@ export const calculateAge = (dob: Date, now: Date = new Date()): AgeResult => {
     venusHouse: getHouse(venusSignIndex),
     mars: signs[marsSignIndex],
     marsDegree,
-    marsHouse: getHouse(marsSignIndex)
+    marsHouse: getHouse(marsSignIndex),
+    jupiter: signs[jupiterSignIndex],
+    jupiterDegree,
+    jupiterHouse: getHouse(jupiterSignIndex),
+    saturn: signs[saturnSignIndex],
+    saturnDegree,
+    saturnHouse: getHouse(saturnSignIndex),
+    uranus: signs[uranusSignIndex],
+    uranusDegree,
+    uranusHouse: getHouse(uranusSignIndex),
+    neptune: signs[neptuneSignIndex],
+    neptuneDegree,
+    neptuneHouse: getHouse(neptuneSignIndex),
+    pluto: signs[plutoSignIndex],
+    plutoDegree,
+    plutoHouse: getHouse(plutoSignIndex)
   };
 
   // Houses (Simplified: 1st house starts at Rising Sign)
@@ -303,6 +351,11 @@ export const calculateAge = (dob: Date, now: Date = new Date()): AgeResult => {
     { name: 'mercury', index: mercurySignIndex },
     { name: 'venus', index: venusSignIndex },
     { name: 'mars', index: marsSignIndex },
+    { name: 'jupiter', index: jupiterSignIndex },
+    { name: 'saturn', index: saturnSignIndex },
+    { name: 'uranus', index: uranusSignIndex },
+    { name: 'neptune', index: neptuneSignIndex },
+    { name: 'pluto', index: plutoSignIndex },
   ];
 
   const aspects: { planet1: string; planet2: string; type: string }[] = [];

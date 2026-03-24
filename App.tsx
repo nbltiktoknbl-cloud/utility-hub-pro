@@ -41,16 +41,16 @@ const App: React.FC = () => {
 
   const toggleDarkMode = () => setDarkMode(prev => !prev);
 
-  const langContextValue = {
+  const langContextValue = React.useMemo(() => ({
     lang,
     setLang,
     t: translations[lang]
-  };
+  }), [lang]);
 
-  const themeContextValue = {
+  const themeContextValue = React.useMemo(() => ({
     darkMode,
     toggleDarkMode
-  };
+  }), [darkMode]);
 
   const renderTool = () => {
     switch (activeTool) {

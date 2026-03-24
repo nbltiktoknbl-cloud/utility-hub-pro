@@ -16,18 +16,25 @@ const BirthChartVisualizer: React.FC<BirthChartVisualizerProps> = ({ result, t, 
   const svgRef = useRef<SVGSVGElement>(null);
   const [hoveredPlanet, setHoveredPlanet] = useState<any>(null);
 
+  if (!result) return null;
+
   const signs = [
     "aries", "taurus", "gemini", "cancer", "leo", "virgo",
     "libra", "scorpio", "sagittarius", "capricorn", "aquarius", "pisces"
   ];
 
   const planetData = [
-    { name: 'sun', label: t.sunSignLabel, sign: result.birthChart.sunSign, degree: result.birthChart.sunDegree, color: '#f97316', icon: Sun },
-    { name: 'moon', label: t.moonSignLabel, sign: result.birthChart.moonSign, degree: result.birthChart.moonDegree, color: '#6366f1', icon: Moon },
-    { name: 'mercury', label: t.mercuryLabel, sign: result.planetaryPositions.mercury, degree: result.planetaryPositions.mercuryDegree, color: '#facc15', icon: Globe },
-    { name: 'venus', label: t.venusLabel, sign: result.planetaryPositions.venus, degree: result.planetaryPositions.venusDegree, color: '#f472b6', icon: Heart },
-    { name: 'mars', label: t.marsLabel, sign: result.planetaryPositions.mars, degree: result.planetaryPositions.marsDegree, color: '#f87171', icon: Zap },
-    { name: 'rising', label: t.risingSignLabel, sign: result.birthChart.risingSign, degree: 0, color: '#10b981', icon: Compass },
+    { name: 'sun', label: t.sunSignLabel, sign: result.birthChart.sunSign, degree: result.birthChart.sunDegree, house: result.birthChart.sunHouse, color: '#f97316', icon: Sun },
+    { name: 'moon', label: t.moonSignLabel, sign: result.birthChart.moonSign, degree: result.birthChart.moonDegree, house: result.birthChart.moonHouse, color: '#6366f1', icon: Moon },
+    { name: 'mercury', label: t.mercuryLabel, sign: result.planetaryPositions.mercury, degree: result.planetaryPositions.mercuryDegree, house: result.planetaryPositions.mercuryHouse, color: '#facc15', icon: Globe },
+    { name: 'venus', label: t.venusLabel, sign: result.planetaryPositions.venus, degree: result.planetaryPositions.venusDegree, house: result.planetaryPositions.venusHouse, color: '#f472b6', icon: Heart },
+    { name: 'mars', label: t.marsLabel, sign: result.planetaryPositions.mars, degree: result.planetaryPositions.marsDegree, house: result.planetaryPositions.marsHouse, color: '#f87171', icon: Zap },
+    { name: 'jupiter', label: t.jupiterLabel, sign: result.planetaryPositions.jupiter, degree: result.planetaryPositions.jupiterDegree, house: result.planetaryPositions.jupiterHouse, color: '#fbbf24', icon: Star },
+    { name: 'saturn', label: t.saturnLabel, sign: result.planetaryPositions.saturn, degree: result.planetaryPositions.saturnDegree, house: result.planetaryPositions.saturnHouse, color: '#78716c', icon: Star },
+    { name: 'uranus', label: t.uranusLabel, sign: result.planetaryPositions.uranus, degree: result.planetaryPositions.uranusDegree, house: result.planetaryPositions.uranusHouse, color: '#22d3ee', icon: Star },
+    { name: 'neptune', label: t.neptuneLabel, sign: result.planetaryPositions.neptune, degree: result.planetaryPositions.neptuneDegree, house: result.planetaryPositions.neptuneHouse, color: '#60a5fa', icon: Star },
+    { name: 'pluto', label: t.plutoLabel, sign: result.planetaryPositions.pluto, degree: result.planetaryPositions.plutoDegree, house: result.planetaryPositions.plutoHouse, color: '#a855f7', icon: Star },
+    { name: 'rising', label: t.risingSignLabel, sign: result.birthChart.risingSign, degree: 0, house: 1, color: '#10b981', icon: Compass },
   ];
 
   // Aspect data for Recharts
@@ -212,7 +219,7 @@ const BirthChartVisualizer: React.FC<BirthChartVisualizerProps> = ({ result, t, 
                   </div>
                 </div>
                 <div className="text-xs font-bold opacity-70">
-                  {hoveredPlanet.degree}° {t.zodiacSigns[hoveredPlanet.sign]}
+                  {hoveredPlanet.degree}° {t.zodiacSigns[hoveredPlanet.sign]} • {t.houseLabel.replace('{n}', hoveredPlanet.house.toString())}
                 </div>
               </motion.div>
             )}

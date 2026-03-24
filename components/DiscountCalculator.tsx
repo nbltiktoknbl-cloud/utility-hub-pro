@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Tag, ShoppingCart } from 'lucide-react';
 import { useLanguage, useTheme } from '../context/AppContext';
+import NumericInput from './NumericInput';
 
 const DiscountCalculator: React.FC = () => {
   const { t } = useLanguage();
@@ -51,10 +52,9 @@ const DiscountCalculator: React.FC = () => {
           <label className={`block text-sm font-bold uppercase tracking-widest opacity-70`}>
             {t.originalPriceLabel}
           </label>
-          <input
-            type="number"
+          <NumericInput
             value={price}
-            onChange={(e) => setPrice(e.target.value)}
+            onChange={setPrice}
             placeholder="e.g. 100"
             className={`w-full p-4 rounded-2xl border-2 transition-all outline-none font-bold text-lg ${
               darkMode 
@@ -67,10 +67,9 @@ const DiscountCalculator: React.FC = () => {
           <label className={`block text-sm font-bold uppercase tracking-widest opacity-70`}>
             {t.discountPercentageLabel}
           </label>
-          <input
-            type="number"
+          <NumericInput
             value={discount}
-            onChange={(e) => setDiscount(e.target.value)}
+            onChange={setDiscount}
             placeholder="e.g. 20"
             className={`w-full p-4 rounded-2xl border-2 transition-all outline-none font-bold text-lg ${
               darkMode 

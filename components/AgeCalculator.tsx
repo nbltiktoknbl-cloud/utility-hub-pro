@@ -1,8 +1,8 @@
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useDeferredValue, useRef } from 'react';
 import { useLanguage, useTheme } from '../context/AppContext';
 import { calculateAge, AgeResult, calculateDateDifference, DateDiffResult } from '../utils/calculateAge';
 import BirthChartVisualizer from './BirthChartVisualizer';
-import { Calendar, Clock, Star, PartyPopper, Heart, Eye, Moon, Wind, Diamond, Share2, User, Globe, Sparkles, Copy, Check, BookOpen, Zap, ArrowUpRight } from 'lucide-react';
+import { Calendar, Clock, Star, PartyPopper, Heart, Eye, Moon, Wind, Diamond, Share2, User, Globe, Sparkles, Copy, Check, BookOpen, Zap, ArrowUpRight, Award, Shield } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { commonTimezones, getUserTimezone } from '../utils/timezones';
 
@@ -61,9 +61,43 @@ const signAttributes: Record<string, { element: string, modality: string, ruling
   pisces: { element: 'water', modality: 'mutable', rulingPlanet: 'neptune' },
 };
 
+import NumericInput from './NumericInput';
+
 const AgeCalculator: React.FC = () => {
   const { t } = useLanguage();
   const { darkMode } = useTheme();
+  
+  // Refs for auto-tabbing
+  const birthDayRef = useRef<HTMLInputElement>(null);
+  const birthMonthRef = useRef<HTMLInputElement>(null);
+  const birthYearRef = useRef<HTMLInputElement>(null);
+  const birthHourRef = useRef<HTMLInputElement>(null);
+  const birthMinuteRef = useRef<HTMLInputElement>(null);
+
+  const endDayRef = useRef<HTMLInputElement>(null);
+  const endMonthRef = useRef<HTMLInputElement>(null);
+  const endYearRef = useRef<HTMLInputElement>(null);
+  const endHourRef = useRef<HTMLInputElement>(null);
+  const endMinuteRef = useRef<HTMLInputElement>(null);
+
+  const holidayDayRef = useRef<HTMLInputElement>(null);
+  const holidayMonthRef = useRef<HTMLInputElement>(null);
+  const holidayYearRef = useRef<HTMLInputElement>(null);
+  const holidayHourRef = useRef<HTMLInputElement>(null);
+  const holidayMinuteRef = useRef<HTMLInputElement>(null);
+
+  const comp1DayRef = useRef<HTMLInputElement>(null);
+  const comp1MonthRef = useRef<HTMLInputElement>(null);
+  const comp1YearRef = useRef<HTMLInputElement>(null);
+  const comp1HourRef = useRef<HTMLInputElement>(null);
+  const comp1MinuteRef = useRef<HTMLInputElement>(null);
+
+  const comp2DayRef = useRef<HTMLInputElement>(null);
+  const comp2MonthRef = useRef<HTMLInputElement>(null);
+  const comp2YearRef = useRef<HTMLInputElement>(null);
+  const comp2HourRef = useRef<HTMLInputElement>(null);
+  const comp2MinuteRef = useRef<HTMLInputElement>(null);
+
   const [dob, setDob] = useState<Date | null>(null);
   const [birthDay, setBirthDay] = useState<string>('');
   const [birthMonth, setBirthMonth] = useState<string>('');
@@ -86,7 +120,7 @@ const AgeCalculator: React.FC = () => {
   const [holidayMinute, setHolidayMinute] = useState<string>('0');
 
   const [birthLocation, setBirthLocation] = useState<string>('');
-  const [targetYear, setTargetYear] = useState<string>(new Date().getFullYear().toString());
+  const [targetYear, setTargetYear] = useState<string>('');
 
   const [timezone, setTimezone] = useState<string>(getUserTimezone());
   const [activeTab, setActiveTab] = useState<'calculate' | 'compare'>('calculate');
@@ -109,41 +143,183 @@ const AgeCalculator: React.FC = () => {
   const [result, setResult] = useState<AgeResult | null>(null);
   const [ageRange, setAgeRange] = useState<{ min: AgeResult, max: AgeResult, diff: DateDiffResult } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
   const [copied, setCopied] = useState(false);
   const [holidayCountdown, setHolidayCountdown] = useState<{ days: number, hours: number, minutes: number, seconds: number } | null>(null);
   const [easterDate, setEasterDate] = useState<Date | null>(null);
+  const [isAuthReady, setIsAuthReady] = useState(false);
+
+  const isInvalid = (type: 'day' | 'month' | 'year' | 'hour' | 'minute', val: string, mStr?: string, yStr?: string) => {
+    if (!val) return false;
+    const n = parseInt(val);
+    if (isNaN(n)) return true;
+    
+    switch (type) {
+      case 'day':
+        if (n < 1 || n > 31) return true;
+        if (mStr && yStr && yStr.length === 4) {
+          const m = parseInt(mStr);
+          const y = parseInt(yStr);
+          if (m >= 1 && m <= 12) {
+            const daysInMonth = new Date(y, m, 0).getDate();
+            return n > daysInMonth;
+          }
+        }
+        return false;
+      case 'month':
+        return n < 1 || n > 12;
+      case 'year':
+        return n < 1 || n > 9999;
+      case 'hour':
+        return n < 0 || n > 23;
+      case 'minute':
+        return n < 0 || n > 59;
+      default:
+        return false;
+    }
+  };
 
   useEffect(() => {
     const currentYear = new Date().getFullYear();
     setEasterDate(calculateEaster(currentYear));
   }, []);
 
-  useEffect(() => {
-    const syncDate = (dStr: string, mStr: string, yStr: string, hStr: string, minStr: string, setter: (d: Date | null) => void) => {
-      if (dStr && mStr && yStr) {
-        const d = parseInt(dStr);
-        const m = parseInt(mStr) - 1;
-        const y = parseInt(yStr);
-        const h = parseInt(hStr || '0');
-        const min = parseInt(minStr || '0');
-        
-        if (d > 0 && d <= 31 && m >= 0 && m < 12 && y > 0 && h >= 0 && h < 24 && min >= 0 && min < 60) {
-          const date = new Date(y, m, d, h, min);
-          if (date.getDate() === d && date.getMonth() === m && date.getFullYear() === y) {
-            setter(date);
-            return;
-          }
-        }
-      }
-      setter(null);
-    };
+  const deferredResult = useDeferredValue(result);
 
-    syncDate(birthDay, birthMonth, birthYear, birthHour, birthMinute, setDob);
-    syncDate(endDay, endMonth, endYear, endHour, endMinute, setDobEnd);
-    syncDate(holidayDay, holidayMonth, holidayYear, holidayHour, holidayMinute, setHolidayDate);
-    syncDate(comp1Day, comp1Month, comp1Year, comp1Hour, comp1Minute, setCompareDate1);
-    syncDate(comp2Day, comp2Month, comp2Year, comp2Hour, comp2Minute, setCompareDate2);
-  }, [birthDay, birthMonth, birthYear, birthHour, birthMinute, endDay, endMonth, endYear, endHour, endMinute, holidayDay, holidayMonth, holidayYear, holidayHour, holidayMinute, comp1Day, comp1Month, comp1Year, comp1Hour, comp1Minute, comp2Day, comp2Month, comp2Year]);
+  const parseDate = (dStr: string, mStr: string, yStr: string, hStr: string, minStr: string): Date | null => {
+    if (!dStr || !mStr || !yStr) return null;
+    const d = parseInt(dStr);
+    const m = parseInt(mStr) - 1;
+    const y = parseInt(yStr);
+    const h = parseInt(hStr || '0');
+    const min = parseInt(minStr || '0');
+
+    if (isNaN(d) || isNaN(m) || isNaN(y) || isNaN(h) || isNaN(min)) return null;
+    if (d < 1 || d > 31 || m < 0 || m > 11 || y < 1 || y > 9999 || h < 0 || h > 23 || min < 0 || min > 59) return null;
+
+    const date = new Date(y, m, d, h, min, 0, 0);
+    if (date.getDate() === d && date.getMonth() === m && date.getFullYear() === y) {
+      return date;
+    }
+    return null;
+  };
+
+  const handleCalculate = useCallback((showError = false) => {
+    setError(null);
+    setValidationErrors({});
+    setResult(null);
+    setAgeRange(null);
+    setCompareResult(null);
+
+    const newValidationErrors: Record<string, string> = {};
+
+    // Validate Birth Date
+    if (isInvalid('day', birthDay, birthMonth, birthYear)) newValidationErrors.birthDay = t.errorInvalidDate;
+    if (isInvalid('month', birthMonth)) newValidationErrors.birthMonth = t.errorInvalidDate;
+    if (isInvalid('year', birthYear)) newValidationErrors.birthYear = t.errorInvalidDate;
+    if (isInvalid('hour', birthHour)) newValidationErrors.birthHour = t.errorInvalidDate;
+    if (isInvalid('minute', birthMinute)) newValidationErrors.birthMinute = t.errorInvalidDate;
+
+    const birthDate = parseDate(birthDay, birthMonth, birthYear, birthHour, birthMinute);
+    if (!birthDate) {
+      if (showError) setError(t.errorInvalidDate);
+      setValidationErrors(newValidationErrors);
+      return;
+    }
+
+    // Validate Range End if provided
+    let birthDateEnd: Date | null = null;
+    if (endDay || endMonth || endYear) {
+      birthDateEnd = parseDate(endDay, endMonth, endYear, endHour, endMinute);
+      if (!birthDateEnd) {
+        if (showError) setError(t.errorInvalidDate);
+        return;
+      }
+    }
+
+    // Validate Holiday if provided
+    let holiday: Date | null = null;
+    if (holidayDay || holidayMonth || holidayYear) {
+      holiday = parseDate(holidayDay, holidayMonth, holidayYear, holidayHour, holidayMinute);
+      if (!holiday) {
+        if (showError) setError(t.errorInvalidDate);
+        return;
+      }
+    }
+
+    if (targetYear && (isNaN(Number(targetYear)) || Number(targetYear) < 1 || Number(targetYear) > 9999)) {
+      setError(t.errorInvalidYear);
+      return;
+    }
+
+    try {
+      const baseDate = targetYear ? new Date(Number(targetYear), 11, 31, 23, 59, 59) : new Date();
+      
+      let nowInTimezone: Date;
+      try {
+        const parts = new Intl.DateTimeFormat('en-US', {
+          timeZone: timezone,
+          year: 'numeric',
+          month: 'numeric',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: 'numeric',
+          second: 'numeric',
+          hour12: false
+        }).formatToParts(baseDate);
+
+        const getPart = (type: string) => parts.find(p => p.type === type)?.value;
+        nowInTimezone = new Date(
+          Number(getPart('year')),
+          Number(getPart('month')) - 1,
+          Number(getPart('day')),
+          Number(getPart('hour')),
+          Number(getPart('minute')),
+          Number(getPart('second'))
+        );
+      } catch (tzError) {
+        console.error('Timezone error:', tzError);
+        nowInTimezone = new Date();
+      }
+
+      if (birthDate > nowInTimezone) {
+        setError(targetYear ? t.errorBirthAfterTarget : t.errorFutureDate);
+        return;
+      }
+
+      const mainResult = calculateAge(birthDate, nowInTimezone);
+      setResult(mainResult);
+      setDob(birthDate);
+
+      if (birthDateEnd) {
+        if (birthDateEnd > nowInTimezone) {
+          setError(t.errorFutureDate);
+          return;
+        }
+        const result2 = calculateAge(birthDateEnd, nowInTimezone);
+        const diffBetween = calculateDateDifference(birthDate, birthDateEnd);
+        
+        if (birthDate < birthDateEnd) {
+          setAgeRange({ min: result2, max: mainResult, diff: diffBetween });
+        } else {
+          setAgeRange({ min: mainResult, max: result2, diff: diffBetween });
+        }
+        setDobEnd(birthDateEnd);
+      } else {
+        setAgeRange(null);
+        setDobEnd(null);
+      }
+
+      if (holiday) {
+        setHolidayDate(holiday);
+      } else {
+        setHolidayDate(null);
+      }
+    } catch (err) {
+      console.error(err);
+      setError(t.errorInvalidDate);
+    }
+  }, [birthDay, birthMonth, birthYear, birthHour, birthMinute, endDay, endMonth, endYear, endHour, endMinute, holidayDay, holidayMonth, holidayYear, holidayHour, holidayMinute, targetYear, timezone, t]);
 
   useEffect(() => {
     if (holidayDate) {
@@ -167,122 +343,6 @@ const AgeCalculator: React.FC = () => {
       setHolidayCountdown(null);
     }
   }, [holidayDate]);
-
-  const handleCalculate = useCallback(() => {
-    setError(null);
-    setResult(null);
-    setAgeRange(null);
-    setCompareResult(null);
-
-    if (!dob) {
-      // Don't set error if we're just initializing
-      if (result) setError(t.errorInvalidDate);
-      return;
-    }
-
-    if (targetYear && (isNaN(Number(targetYear)) || Number(targetYear) < 1 || Number(targetYear) > 9999)) {
-      setError(t.errorInvalidYear);
-      setResult(null);
-      return;
-    }
-
-    try {
-      const birthDate = new Date(dob);
-      if (isNaN(birthDate.getTime())) {
-        setError(t.errorInvalidDate);
-        setResult(null);
-        return;
-      }
-
-      const baseDate = targetYear ? new Date(Number(targetYear), 11, 31, 23, 59, 59) : new Date();
-      const nowInTimezoneStr = new Intl.DateTimeFormat('en-US', {
-        timeZone: timezone,
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false
-      }).format(baseDate);
-
-      const [datePart, timePart] = nowInTimezoneStr.split(', ');
-      const [month, day, year] = datePart.split('/');
-      const [hour, minute, second] = timePart.split(':');
-      const nowInTimezone = new Date(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute), Number(second));
-
-      if (birthDate > nowInTimezone) {
-        setError(targetYear ? t.errorBirthAfterTarget : t.errorFutureDate);
-        setResult(null);
-        return;
-      }
-
-      setError(null);
-      const mainResult = calculateAge(birthDate, nowInTimezone);
-      setResult(mainResult);
-
-      // Calculate age range if dobEnd is provided
-      if (dobEnd) {
-        const birthDateEnd = new Date(dobEnd);
-        if (!isNaN(birthDateEnd.getTime())) {
-          if (birthDateEnd > nowInTimezone) {
-            setError(t.errorFutureDate);
-            setResult(null);
-            setAgeRange(null);
-            return;
-          }
-          const result2 = calculateAge(birthDateEnd, nowInTimezone);
-          const diffBetween = calculateDateDifference(birthDate, birthDateEnd);
-          
-          // Determine min and max age (min age is from the later birth date)
-          if (birthDate < birthDateEnd) {
-            setAgeRange({ min: result2, max: mainResult, diff: diffBetween });
-          } else {
-            setAgeRange({ min: mainResult, max: result2, diff: diffBetween });
-          }
-        } else {
-          setAgeRange(null);
-        }
-      } else {
-        setAgeRange(null);
-      }
-
-      // Calculate countdown to holiday
-      if (holidayDate) {
-        const holiday = new Date(holidayDate);
-        if (!isNaN(holiday.getTime())) {
-          const updateCountdown = () => {
-            const now = new Date();
-            const diffMs = holiday.getTime() - now.getTime();
-            if (diffMs > 0) {
-              const days = Math.floor(diffMs / (1000 * 60 * 60 * 24));
-              const hours = Math.floor((diffMs % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-              const minutes = Math.floor((diffMs % (1000 * 60 * 60)) / (1000 * 60));
-              const seconds = Math.floor((diffMs % (1000 * 60)) / 1000);
-              setHolidayCountdown({ days, hours, minutes, seconds });
-            } else {
-              setHolidayCountdown(null);
-            }
-          };
-          updateCountdown();
-        } else {
-          setHolidayCountdown(null);
-        }
-      } else {
-        setHolidayCountdown(null);
-      }
-    } catch (err) {
-      console.error(err);
-      setError(t.errorInvalidDate);
-      setResult(null);
-    }
-  }, [dob, targetYear, timezone, dobEnd, holidayDate, t, result]);
-
-  useEffect(() => {
-    if (dob) {
-      handleCalculate();
-    }
-  }, [dob, targetYear, timezone, dobEnd, holidayDate, handleCalculate]);
 
   const handleCopy = async () => {
     if (!result) return;
@@ -311,25 +371,23 @@ const AgeCalculator: React.FC = () => {
 
   const handleCompareDates = () => {
     setError(null);
+    setValidationErrors({});
     setResult(null);
     setAgeRange(null);
     setCompareResult(null);
 
-    if (!compareDate1 || !compareDate2) {
-      setError(t.errorInvalidDate);
-      return;
-    }
+    const d1 = parseDate(comp1Day, comp1Month, comp1Year, comp1Hour, comp1Minute);
+    const d2 = parseDate(comp2Day, comp2Month, comp2Year, comp2Hour, comp2Minute);
 
-    const d1 = new Date(compareDate1);
-    const d2 = new Date(compareDate2);
-
-    if (isNaN(d1.getTime()) || isNaN(d2.getTime())) {
+    if (!d1 || !d2) {
       setError(t.errorInvalidDate);
       return;
     }
 
     const diff = calculateAge(d1, d2);
     setCompareResult(diff);
+    setCompareDate1(d1);
+    setCompareDate2(d2);
   };
 
   const handleShare = async () => {
@@ -372,20 +430,28 @@ const AgeCalculator: React.FC = () => {
     if (result && dob && !targetYear) {
       interval = setInterval(() => {
         const birthDate = new Date(dob);
-        const nowInTimezoneStr = new Intl.DateTimeFormat('en-US', {
+        const baseDate = new Date();
+        
+        const parts = new Intl.DateTimeFormat('en-US', {
           timeZone: timezone,
           year: 'numeric',
-          month: '2-digit',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit',
-          second: '2-digit',
+          month: 'numeric',
+          day: 'numeric',
+          hour: 'numeric',
+          minute: 'numeric',
+          second: 'numeric',
           hour12: false
-        }).format(new Date());
-        const [datePart, timePart] = nowInTimezoneStr.split(', ');
-        const [month, day, year] = datePart.split('/');
-        const [hour, minute, second] = timePart.split(':');
-        const nowInTimezone = new Date(Number(year), Number(month) - 1, Number(day), Number(hour), Number(minute), Number(second));
+        }).formatToParts(baseDate);
+
+        const getPart = (type: string) => parts.find(p => p.type === type)?.value;
+        const nowInTimezone = new Date(
+          Number(getPart('year')),
+          Number(getPart('month')) - 1,
+          Number(getPart('day')),
+          Number(getPart('hour')),
+          Number(getPart('minute')),
+          Number(getPart('second'))
+        );
         
         setResult(calculateAge(birthDate, nowInTimezone));
       }, 1000);
@@ -401,6 +467,7 @@ const AgeCalculator: React.FC = () => {
             setActiveTab('calculate');
             setError(null);
           }}
+          title={t.tooltips.calculate}
           className={`px-6 py-3 rounded-2xl font-bold transition-all ${
             activeTab === 'calculate'
               ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20'
@@ -414,6 +481,7 @@ const AgeCalculator: React.FC = () => {
             setActiveTab('compare');
             setError(null);
           }}
+          title={t.tooltips.compare}
           className={`px-6 py-3 rounded-2xl font-bold transition-all ${
             activeTab === 'compare'
               ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20'
@@ -434,40 +502,50 @@ const AgeCalculator: React.FC = () => {
               <div className="grid grid-cols-3 gap-2 mb-4">
                 <div className="flex flex-col gap-1">
                   <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.dayLabel}</span>
-                  <input
-                    type="number"
+                  <NumericInput
+                    ref={birthDayRef}
+                    nextRef={birthMonthRef}
                     placeholder="DD"
                     value={birthDay}
-                    onChange={(e) => setBirthDay(e.target.value)}
-                    min="1"
-                    max="31"
-                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
+                    onChange={setBirthDay}
+                    maxLength={2}
+                    error={!!validationErrors.birthDay || isInvalid('day', birthDay, birthMonth, birthYear)}
+                    title={t.tooltips.dob}
+                    className={`w-full px-4 py-2 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm ${
                       darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
                     }`}
                   />
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.monthLabel}</span>
-                  <input
-                    type="number"
+                  <NumericInput
+                    ref={birthMonthRef}
+                    prevRef={birthDayRef}
+                    nextRef={birthYearRef}
                     placeholder="MM"
                     value={birthMonth}
-                    onChange={(e) => setBirthMonth(e.target.value)}
-                    min="1"
-                    max="12"
-                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
+                    onChange={setBirthMonth}
+                    maxLength={2}
+                    error={!!validationErrors.birthMonth || isInvalid('month', birthMonth)}
+                    title={t.tooltips.dob}
+                    className={`w-full px-4 py-2 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm ${
                       darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
                     }`}
                   />
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.yearLabel}</span>
-                  <input
-                    type="number"
+                  <NumericInput
+                    ref={birthYearRef}
+                    prevRef={birthMonthRef}
+                    nextRef={birthHourRef}
                     placeholder="YYYY"
                     value={birthYear}
-                    onChange={(e) => setBirthYear(e.target.value)}
-                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
+                    onChange={setBirthYear}
+                    maxLength={4}
+                    error={!!validationErrors.birthYear || isInvalid('year', birthYear)}
+                    title={t.tooltips.dob}
+                    className={`w-full px-4 py-2 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm ${
                       darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
                     }`}
                   />
@@ -481,13 +559,16 @@ const AgeCalculator: React.FC = () => {
                   <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.hourLabel}</span>
                   <div className="relative">
                     <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
-                    <input
-                      type="number"
+                    <NumericInput
+                      ref={birthHourRef}
+                      prevRef={birthYearRef}
+                      nextRef={birthMinuteRef}
                       placeholder="HH"
                       value={birthHour}
-                      onChange={(e) => setBirthHour(e.target.value)}
-                      min="0"
-                      max="23"
+                      onChange={setBirthHour}
+                      maxLength={2}
+                      error={!!validationErrors.birthHour || isInvalid('hour', birthHour)}
+                      title={t.tooltips.birthTime}
                       className={`w-full pl-9 pr-4 py-2 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm ${
                         darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
                       }`}
@@ -498,13 +579,15 @@ const AgeCalculator: React.FC = () => {
                   <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.minuteLabel}</span>
                   <div className="relative">
                     <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
-                    <input
-                      type="number"
+                    <NumericInput
+                      ref={birthMinuteRef}
+                      prevRef={birthHourRef}
                       placeholder="MM"
                       value={birthMinute}
-                      onChange={(e) => setBirthMinute(e.target.value)}
-                      min="0"
-                      max="59"
+                      onChange={setBirthMinute}
+                      maxLength={2}
+                      error={!!validationErrors.birthMinute || isInvalid('minute', birthMinute)}
+                      title={t.tooltips.birthTime}
                       className={`w-full pl-9 pr-4 py-2 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm ${
                         darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
                       }`}
@@ -521,40 +604,50 @@ const AgeCalculator: React.FC = () => {
               <div className="grid grid-cols-3 gap-2 mb-2">
                 <div className="flex flex-col gap-1">
                   <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.dayLabel}</span>
-                  <input
-                    type="number"
+                  <NumericInput
+                    ref={endDayRef}
+                    nextRef={endMonthRef}
                     placeholder="DD"
                     value={endDay}
-                    onChange={(e) => setEndDay(e.target.value)}
-                    min="1"
-                    max="31"
-                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
+                    onChange={setEndDay}
+                    maxLength={2}
+                    error={!!validationErrors.endDay || isInvalid('day', endDay, endMonth, endYear)}
+                    title={t.tooltips.rangeEnd}
+                    className={`w-full px-4 py-2 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm ${
                       darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
                     }`}
                   />
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.monthLabel}</span>
-                  <input
-                    type="number"
+                  <NumericInput
+                    ref={endMonthRef}
+                    prevRef={endDayRef}
+                    nextRef={endYearRef}
                     placeholder="MM"
                     value={endMonth}
-                    onChange={(e) => setEndMonth(e.target.value)}
-                    min="1"
-                    max="12"
-                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
+                    onChange={setEndMonth}
+                    maxLength={2}
+                    error={!!validationErrors.endMonth || isInvalid('month', endMonth)}
+                    title={t.tooltips.rangeEnd}
+                    className={`w-full px-4 py-2 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm ${
                       darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
                     }`}
                   />
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.yearLabel}</span>
-                  <input
-                    type="number"
+                  <NumericInput
+                    ref={endYearRef}
+                    prevRef={endMonthRef}
+                    nextRef={endHourRef}
                     placeholder="YYYY"
                     value={endYear}
-                    onChange={(e) => setEndYear(e.target.value)}
-                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
+                    onChange={setEndYear}
+                    maxLength={4}
+                    error={!!validationErrors.endYear || isInvalid('year', endYear)}
+                    title={t.tooltips.rangeEnd}
+                    className={`w-full px-4 py-2 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm ${
                       darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
                     }`}
                   />
@@ -565,13 +658,16 @@ const AgeCalculator: React.FC = () => {
                   <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.hourLabel}</span>
                   <div className="relative">
                     <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
-                    <input
-                      type="number"
+                    <NumericInput
+                      ref={endHourRef}
+                      prevRef={endYearRef}
+                      nextRef={endMinuteRef}
                       placeholder="HH"
                       value={endHour}
-                      onChange={(e) => setEndHour(e.target.value)}
-                      min="0"
-                      max="23"
+                      onChange={setEndHour}
+                      maxLength={2}
+                      error={isInvalid('hour', endHour)}
+                      title={t.tooltips.rangeEnd}
                       className={`w-full pl-9 pr-4 py-2 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm ${
                         darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
                       }`}
@@ -582,13 +678,15 @@ const AgeCalculator: React.FC = () => {
                   <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.minuteLabel}</span>
                   <div className="relative">
                     <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
-                    <input
-                      type="number"
+                    <NumericInput
+                      ref={endMinuteRef}
+                      prevRef={endHourRef}
                       placeholder="MM"
                       value={endMinute}
-                      onChange={(e) => setEndMinute(e.target.value)}
-                      min="0"
-                      max="59"
+                      onChange={setEndMinute}
+                      maxLength={2}
+                      error={isInvalid('minute', endMinute)}
+                      title={t.tooltips.rangeEnd}
                       className={`w-full pl-9 pr-4 py-2 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm ${
                         darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
                       }`}
@@ -605,40 +703,50 @@ const AgeCalculator: React.FC = () => {
               <div className="grid grid-cols-3 gap-2 mb-2">
                 <div className="flex flex-col gap-1">
                   <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.dayLabel}</span>
-                  <input
-                    type="number"
+                  <NumericInput
+                    ref={holidayDayRef}
+                    nextRef={holidayMonthRef}
                     placeholder="DD"
                     value={holidayDay}
-                    onChange={(e) => setHolidayDay(e.target.value)}
-                    min="1"
-                    max="31"
-                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
+                    onChange={setHolidayDay}
+                    maxLength={2}
+                    error={!!validationErrors.holidayDay || isInvalid('day', holidayDay, holidayMonth, holidayYear)}
+                    title={t.tooltips.holiday}
+                    className={`w-full px-4 py-2 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm ${
                       darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
                     }`}
                   />
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.monthLabel}</span>
-                  <input
-                    type="number"
+                  <NumericInput
+                    ref={holidayMonthRef}
+                    prevRef={holidayDayRef}
+                    nextRef={holidayYearRef}
                     placeholder="MM"
                     value={holidayMonth}
-                    onChange={(e) => setHolidayMonth(e.target.value)}
-                    min="1"
-                    max="12"
-                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
+                    onChange={setHolidayMonth}
+                    maxLength={2}
+                    error={!!validationErrors.holidayMonth || isInvalid('month', holidayMonth)}
+                    title={t.tooltips.holiday}
+                    className={`w-full px-4 py-2 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm ${
                       darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
                     }`}
                   />
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.yearLabel}</span>
-                  <input
-                    type="number"
+                  <NumericInput
+                    ref={holidayYearRef}
+                    prevRef={holidayMonthRef}
+                    nextRef={holidayHourRef}
                     placeholder="YYYY"
                     value={holidayYear}
-                    onChange={(e) => setHolidayYear(e.target.value)}
-                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
+                    onChange={setHolidayYear}
+                    maxLength={4}
+                    error={!!validationErrors.holidayYear || isInvalid('year', holidayYear)}
+                    title={t.tooltips.holiday}
+                    className={`w-full px-4 py-2 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm ${
                       darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
                     }`}
                   />
@@ -649,13 +757,16 @@ const AgeCalculator: React.FC = () => {
                   <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.hourLabel}</span>
                   <div className="relative">
                     <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
-                    <input
-                      type="number"
+                    <NumericInput
+                      ref={holidayHourRef}
+                      prevRef={holidayYearRef}
+                      nextRef={holidayMinuteRef}
                       placeholder="HH"
                       value={holidayHour}
-                      onChange={(e) => setHolidayHour(e.target.value)}
-                      min="0"
-                      max="23"
+                      onChange={setHolidayHour}
+                      maxLength={2}
+                      error={isInvalid('hour', holidayHour)}
+                      title={t.tooltips.holiday}
                       className={`w-full pl-9 pr-4 py-2 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm ${
                         darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
                       }`}
@@ -666,13 +777,15 @@ const AgeCalculator: React.FC = () => {
                   <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.minuteLabel}</span>
                   <div className="relative">
                     <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
-                    <input
-                      type="number"
+                    <NumericInput
+                      ref={holidayMinuteRef}
+                      prevRef={holidayHourRef}
                       placeholder="MM"
                       value={holidayMinute}
-                      onChange={(e) => setHolidayMinute(e.target.value)}
-                      min="0"
-                      max="59"
+                      onChange={setHolidayMinute}
+                      maxLength={2}
+                      error={isInvalid('minute', holidayMinute)}
+                      title={t.tooltips.holiday}
                       className={`w-full pl-9 pr-4 py-2 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm ${
                         darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
                       }`}
@@ -689,13 +802,14 @@ const AgeCalculator: React.FC = () => {
               <div className="relative space-y-3">
                 <div className="relative">
                   <Calendar className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400" size={16} />
-                  <input
+                  <NumericInput
                     id="target-year-input"
-                    type="number"
                     placeholder={new Date().getFullYear().toString()}
                     value={targetYear}
-                    onChange={(e) => setTargetYear(e.target.value)}
-                    aria-label={t.targetYearLabel}
+                    onChange={setTargetYear}
+                    maxLength={4}
+                    error={isInvalid('year', targetYear)}
+                    title={t.tooltips.targetYear}
                     className={`w-full pl-12 pr-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
                       darkMode 
                         ? 'bg-gray-800/50 border-gray-700 text-white' 
@@ -769,10 +883,11 @@ const AgeCalculator: React.FC = () => {
           </div>
 
           <button
-            onClick={handleCalculate}
+            onClick={() => activeTab === 'calculate' ? handleCalculate(true) : handleCompareDates()}
+            title={activeTab === 'calculate' ? t.tooltips.calculate : t.tooltips.compare}
             className="w-full px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl transition-all active:scale-95 shadow-lg shadow-blue-500/20 h-[50px]"
           >
-            {t.calculateBtn}
+            {activeTab === 'calculate' ? t.calculateBtn : t.compareBtn}
           </button>
         </div>
         ) : (
@@ -784,40 +899,50 @@ const AgeCalculator: React.FC = () => {
               <div className="grid grid-cols-3 gap-2 mb-2">
                 <div className="flex flex-col gap-1">
                   <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.dayLabel}</span>
-                  <input
-                    type="number"
+                  <NumericInput
+                    ref={comp1DayRef}
+                    nextRef={comp1MonthRef}
                     placeholder="DD"
                     value={comp1Day}
-                    onChange={(e) => setComp1Day(e.target.value)}
-                    min="1"
-                    max="31"
-                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
+                    onChange={setComp1Day}
+                    maxLength={2}
+                    error={!!validationErrors.comp1Day || isInvalid('day', comp1Day, comp1Month, comp1Year)}
+                    title={t.tooltips.dob}
+                    className={`w-full px-4 py-2 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm ${
                       darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
                     }`}
                   />
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.monthLabel}</span>
-                  <input
-                    type="number"
+                  <NumericInput
+                    ref={comp1MonthRef}
+                    prevRef={comp1DayRef}
+                    nextRef={comp1YearRef}
                     placeholder="MM"
                     value={comp1Month}
-                    onChange={(e) => setComp1Month(e.target.value)}
-                    min="1"
-                    max="12"
-                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
+                    onChange={setComp1Month}
+                    maxLength={2}
+                    error={!!validationErrors.comp1Month || isInvalid('month', comp1Month)}
+                    title={t.tooltips.dob}
+                    className={`w-full px-4 py-2 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm ${
                       darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
                     }`}
                   />
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.yearLabel}</span>
-                  <input
-                    type="number"
+                  <NumericInput
+                    ref={comp1YearRef}
+                    prevRef={comp1MonthRef}
+                    nextRef={comp1HourRef}
                     placeholder="YYYY"
                     value={comp1Year}
-                    onChange={(e) => setComp1Year(e.target.value)}
-                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
+                    onChange={setComp1Year}
+                    maxLength={4}
+                    error={!!validationErrors.comp1Year || isInvalid('year', comp1Year)}
+                    title={t.tooltips.dob}
+                    className={`w-full px-4 py-2 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm ${
                       darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
                     }`}
                   />
@@ -828,13 +953,16 @@ const AgeCalculator: React.FC = () => {
                   <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.hourLabel}</span>
                   <div className="relative">
                     <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
-                    <input
-                      type="number"
+                    <NumericInput
+                      ref={comp1HourRef}
+                      prevRef={comp1YearRef}
+                      nextRef={comp1MinuteRef}
                       placeholder="HH"
                       value={comp1Hour}
-                      onChange={(e) => setComp1Hour(e.target.value)}
-                      min="0"
-                      max="23"
+                      onChange={setComp1Hour}
+                      maxLength={2}
+                      error={!!validationErrors.comp1Hour || isInvalid('hour', comp1Hour)}
+                      title={t.tooltips.birthTime}
                       className={`w-full pl-9 pr-4 py-2 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm ${
                         darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
                       }`}
@@ -845,13 +973,15 @@ const AgeCalculator: React.FC = () => {
                   <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.minuteLabel}</span>
                   <div className="relative">
                     <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
-                    <input
-                      type="number"
+                    <NumericInput
+                      ref={comp1MinuteRef}
+                      prevRef={comp1HourRef}
                       placeholder="MM"
                       value={comp1Minute}
-                      onChange={(e) => setComp1Minute(e.target.value)}
-                      min="0"
-                      max="59"
+                      onChange={setComp1Minute}
+                      maxLength={2}
+                      error={!!validationErrors.comp1Minute || isInvalid('minute', comp1Minute)}
+                      title={t.tooltips.birthTime}
                       className={`w-full pl-9 pr-4 py-2 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm ${
                         darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
                       }`}
@@ -868,40 +998,50 @@ const AgeCalculator: React.FC = () => {
               <div className="grid grid-cols-3 gap-2 mb-2">
                 <div className="flex flex-col gap-1">
                   <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.dayLabel}</span>
-                  <input
-                    type="number"
+                  <NumericInput
+                    ref={comp2DayRef}
+                    nextRef={comp2MonthRef}
                     placeholder="DD"
                     value={comp2Day}
-                    onChange={(e) => setComp2Day(e.target.value)}
-                    min="1"
-                    max="31"
-                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
+                    onChange={setComp2Day}
+                    maxLength={2}
+                    error={!!validationErrors.comp2Day || isInvalid('day', comp2Day, comp2Month, comp2Year)}
+                    title={t.tooltips.dob}
+                    className={`w-full px-4 py-2 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm ${
                       darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
                     }`}
                   />
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.monthLabel}</span>
-                  <input
-                    type="number"
+                  <NumericInput
+                    ref={comp2MonthRef}
+                    prevRef={comp2DayRef}
+                    nextRef={comp2YearRef}
                     placeholder="MM"
                     value={comp2Month}
-                    onChange={(e) => setComp2Month(e.target.value)}
-                    min="1"
-                    max="12"
-                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
+                    onChange={setComp2Month}
+                    maxLength={2}
+                    error={!!validationErrors.comp2Month || isInvalid('month', comp2Month)}
+                    title={t.tooltips.dob}
+                    className={`w-full px-4 py-2 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm ${
                       darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
                     }`}
                   />
                 </div>
                 <div className="flex flex-col gap-1">
                   <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.yearLabel}</span>
-                  <input
-                    type="number"
+                  <NumericInput
+                    ref={comp2YearRef}
+                    prevRef={comp2MonthRef}
+                    nextRef={comp2HourRef}
                     placeholder="YYYY"
                     value={comp2Year}
-                    onChange={(e) => setComp2Year(e.target.value)}
-                    className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
+                    onChange={setComp2Year}
+                    maxLength={4}
+                    error={!!validationErrors.comp2Year || isInvalid('year', comp2Year)}
+                    title={t.tooltips.dob}
+                    className={`w-full px-4 py-2 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm ${
                       darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
                     }`}
                   />
@@ -912,13 +1052,16 @@ const AgeCalculator: React.FC = () => {
                   <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.hourLabel}</span>
                   <div className="relative">
                     <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
-                    <input
-                      type="number"
+                    <NumericInput
+                      ref={comp2HourRef}
+                      prevRef={comp2YearRef}
+                      nextRef={comp2MinuteRef}
                       placeholder="HH"
                       value={comp2Hour}
-                      onChange={(e) => setComp2Hour(e.target.value)}
-                      min="0"
-                      max="23"
+                      onChange={setComp2Hour}
+                      maxLength={2}
+                      error={!!validationErrors.comp2Hour || isInvalid('hour', comp2Hour)}
+                      title={t.tooltips.birthTime}
                       className={`w-full pl-9 pr-4 py-2 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm ${
                         darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
                       }`}
@@ -929,13 +1072,15 @@ const AgeCalculator: React.FC = () => {
                   <span className="text-[10px] uppercase font-bold opacity-50 px-1">{t.minuteLabel}</span>
                   <div className="relative">
                     <Clock className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" size={14} />
-                    <input
-                      type="number"
+                    <NumericInput
+                      ref={comp2MinuteRef}
+                      prevRef={comp2HourRef}
                       placeholder="MM"
                       value={comp2Minute}
-                      onChange={(e) => setComp2Minute(e.target.value)}
-                      min="0"
-                      max="59"
+                      onChange={setComp2Minute}
+                      maxLength={2}
+                      error={!!validationErrors.comp2Minute || isInvalid('minute', comp2Minute)}
+                      title={t.tooltips.birthTime}
                       className={`w-full pl-9 pr-4 py-2 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm ${
                         darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
                       }`}
@@ -947,6 +1092,7 @@ const AgeCalculator: React.FC = () => {
 
             <button
               onClick={handleCompareDates}
+              title={t.tooltips.compare}
               className="w-full px-8 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-bold rounded-xl transition-all active:scale-95 shadow-lg shadow-blue-500/20 h-[50px]"
             >
               <Sparkles size={16} />
@@ -1022,6 +1168,38 @@ const AgeCalculator: React.FC = () => {
               </div>
             </div>
 
+            {/* Easter Date Section */}
+            {easterDate && (
+              <motion.div
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.68 }}
+                className={`p-6 rounded-3xl glass-card flex items-center justify-between border-l-4 border-yellow-500 bg-gradient-to-r from-yellow-500/5 to-transparent`}
+              >
+                <div className="flex items-center gap-4">
+                  <div className="p-3 rounded-2xl bg-yellow-500/20 text-yellow-500 shadow-lg shadow-yellow-500/10">
+                    <Sparkles size={20} />
+                  </div>
+                  <div>
+                    <div className={`text-[10px] font-bold uppercase tracking-widest ${darkMode ? 'text-gray-400' : 'text-gray-500'} mb-1`}>
+                      {t.easterDate.replace('{year}', easterDate.getFullYear().toString())}
+                    </div>
+                    <div className="text-2xl font-black tracking-tight">
+                      {easterDate.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}
+                    </div>
+                  </div>
+                </div>
+                <div className="hidden sm:block text-right">
+                  <div className={`text-[10px] font-bold uppercase tracking-widest opacity-40 mb-1`}>
+                    {t.zodiacSign}
+                  </div>
+                  <div className="text-sm font-bold text-yellow-500/80">
+                    {t.zodiacSigns['aries']} / {t.zodiacSigns['pisces']}
+                  </div>
+                </div>
+              </motion.div>
+            )}
+
             {/* Next Birthday Countdown Timer */}
             <div className="space-y-4">
               <h3 className="text-xl font-black tracking-tight flex items-center gap-2">
@@ -1067,7 +1245,7 @@ const AgeCalculator: React.FC = () => {
                   animate={{ opacity: 1, scale: 1 }}
                   transition={{ delay: 0.7 }}
                 >
-                  <BirthChartVisualizer result={result} t={t} darkMode={darkMode} />
+                  <BirthChartVisualizer result={deferredResult} t={t} darkMode={darkMode} />
                 </motion.div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -1112,7 +1290,7 @@ const AgeCalculator: React.FC = () => {
                       interpretations: t.risingSignInterpretations
                     },
                   ].map((item, idx) => {
-                    const attrs = signAttributes[item.sign];
+                    const attrs = signAttributes[item.sign] || { element: 'fire', modality: 'cardinal', rulingPlanet: 'mars' };
                     return (
                       <motion.div
                         key={item.planet}
@@ -1189,8 +1367,13 @@ const AgeCalculator: React.FC = () => {
                   { planet: 'mercury', label: t.mercuryLabel, sign: result.planetaryPositions.mercury, degree: result.planetaryPositions.mercuryDegree, house: result.planetaryPositions.mercuryHouse, color: 'border-yellow-400', iconColor: 'text-yellow-400' },
                   { planet: 'venus', label: t.venusLabel, sign: result.planetaryPositions.venus, degree: result.planetaryPositions.venusDegree, house: result.planetaryPositions.venusHouse, color: 'border-pink-400', iconColor: 'text-pink-400' },
                   { planet: 'mars', label: t.marsLabel, sign: result.planetaryPositions.mars, degree: result.planetaryPositions.marsDegree, house: result.planetaryPositions.marsHouse, color: 'border-red-400', iconColor: 'text-red-400' },
+                  { planet: 'jupiter', label: t.jupiterLabel, sign: result.planetaryPositions.jupiter, degree: result.planetaryPositions.jupiterDegree, house: result.planetaryPositions.jupiterHouse, color: 'border-orange-400', iconColor: 'text-orange-400' },
+                  { planet: 'saturn', label: t.saturnLabel, sign: result.planetaryPositions.saturn, degree: result.planetaryPositions.saturnDegree, house: result.planetaryPositions.saturnHouse, color: 'border-stone-400', iconColor: 'text-stone-400' },
+                  { planet: 'uranus', label: t.uranusLabel, sign: result.planetaryPositions.uranus, degree: result.planetaryPositions.uranusDegree, house: result.planetaryPositions.uranusHouse, color: 'border-cyan-400', iconColor: 'text-cyan-400' },
+                  { planet: 'neptune', label: t.neptuneLabel, sign: result.planetaryPositions.neptune, degree: result.planetaryPositions.neptuneDegree, house: result.planetaryPositions.neptuneHouse, color: 'border-blue-400', iconColor: 'text-blue-400' },
+                  { planet: 'pluto', label: t.plutoLabel, sign: result.planetaryPositions.pluto, degree: result.planetaryPositions.plutoDegree, house: result.planetaryPositions.plutoHouse, color: 'border-purple-400', iconColor: 'text-purple-400' },
                 ].map((item, idx) => {
-                  const attrs = signAttributes[item.sign];
+                  const attrs = signAttributes[item.sign] || { element: 'fire', modality: 'cardinal', rulingPlanet: 'mars' };
                   return (
                     <motion.div
                       key={item.label}
@@ -1275,18 +1458,21 @@ const AgeCalculator: React.FC = () => {
                     {t.housesTitle}
                   </h4>
                   <div className="grid grid-cols-2 gap-2">
-                    {result.houses.map((sign, idx) => (
-                    <div key={idx} className="flex flex-col p-2 rounded-lg bg-white/5 gap-1">
-                      <div className="flex justify-between items-center text-[10px]">
-                        <span className="opacity-60">{t.houseLabel.replace('{n}', (idx + 1).toString())}</span>
-                        <span className="font-bold text-indigo-400">{t.zodiacSigns[sign]}</span>
-                      </div>
-                      <div className="flex justify-between text-[8px] opacity-40 font-medium uppercase tracking-tighter">
-                        <span>{t.elements[signAttributes[sign].element]}</span>
-                        <span>{t.modalities[signAttributes[sign].modality]}</span>
-                      </div>
-                    </div>
-                    ))}
+                    {result.houses.map((sign, idx) => {
+                      const attrs = signAttributes[sign] || { element: 'fire', modality: 'cardinal', rulingPlanet: 'mars' };
+                      return (
+                        <div key={idx} className="flex flex-col p-2 rounded-lg bg-white/5 gap-1">
+                          <div className="flex justify-between items-center text-[10px]">
+                            <span className="opacity-60">{t.houseLabel.replace('{n}', (idx + 1).toString())}</span>
+                            <span className="font-bold text-indigo-400">{t.zodiacSigns[sign]}</span>
+                          </div>
+                          <div className="flex justify-between text-[8px] opacity-40 font-medium uppercase tracking-tighter">
+                            <span>{t.elements[attrs.element]}</span>
+                            <span>{t.modalities[attrs.modality]}</span>
+                          </div>
+                        </div>
+                      );
+                    })}
                   </div>
                 </motion.div>
               </div>
@@ -1340,14 +1526,16 @@ const AgeCalculator: React.FC = () => {
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                 {[
-                  { label: t.sunSignLabel, sign: result.birthChart.sunSign, degree: result.birthChart.sunDegree, icon: Star, color: 'from-orange-400 to-red-500' },
-                  { label: t.moonSignLabel, sign: result.birthChart.moonSign, degree: result.birthChart.moonDegree, icon: Moon, color: 'from-indigo-400 to-blue-500' },
-                  { label: t.risingSignLabel, sign: result.birthChart.risingSign, icon: Sparkles, color: 'from-emerald-400 to-teal-500' },
-                  { label: t.mercuryLabel, sign: result.planetaryPositions.mercury, degree: result.planetaryPositions.mercuryDegree, icon: Globe, color: 'from-yellow-400 to-orange-500' },
-                  { label: t.venusLabel, sign: result.planetaryPositions.venus, degree: result.planetaryPositions.venusDegree, icon: Heart, color: 'from-pink-400 to-rose-500' },
-                  { label: t.marsLabel, sign: result.planetaryPositions.mars, degree: result.planetaryPositions.marsDegree, icon: Zap, color: 'from-red-400 to-orange-600' },
+                  { label: t.sunSignLabel, sign: result.birthChart.sunSign, degree: result.birthChart.sunDegree, house: result.birthChart.sunHouse, icon: Star, color: 'from-orange-400 to-red-500' },
+                  { label: t.moonSignLabel, sign: result.birthChart.moonSign, degree: result.birthChart.moonDegree, house: result.birthChart.moonHouse, icon: Moon, color: 'from-indigo-400 to-blue-500' },
+                  { label: t.risingSignLabel, sign: result.birthChart.risingSign, house: 1, icon: Sparkles, color: 'from-emerald-400 to-teal-500' },
+                  { label: t.mercuryLabel, sign: result.planetaryPositions.mercury, degree: result.planetaryPositions.mercuryDegree, house: result.planetaryPositions.mercuryHouse, icon: Globe, color: 'from-yellow-400 to-orange-500' },
+                  { label: t.venusLabel, sign: result.planetaryPositions.venus, degree: result.planetaryPositions.venusDegree, house: result.planetaryPositions.venusHouse, icon: Heart, color: 'from-pink-400 to-rose-500' },
+                  { label: t.marsLabel, sign: result.planetaryPositions.mars, degree: result.planetaryPositions.marsDegree, house: result.planetaryPositions.marsHouse, icon: Zap, color: 'from-red-400 to-orange-600' },
+                  { label: t.jupiterLabel, sign: result.planetaryPositions.jupiter, degree: result.planetaryPositions.jupiterDegree, house: result.planetaryPositions.jupiterHouse, icon: Award, color: 'from-orange-400 to-yellow-500' },
+                  { label: t.saturnLabel, sign: result.planetaryPositions.saturn, degree: result.planetaryPositions.saturnDegree, house: result.planetaryPositions.saturnHouse, icon: Shield, color: 'from-stone-400 to-gray-600' },
                 ].map((item, idx) => {
-                  const attrs = signAttributes[item.sign];
+                  const attrs = signAttributes[item.sign] || { element: 'fire', modality: 'cardinal', rulingPlanet: 'mars' };
                   return (
                     <motion.div 
                       key={idx}
@@ -1369,6 +1557,11 @@ const AgeCalculator: React.FC = () => {
                           <span className="px-2 py-1 rounded-lg bg-white/5 text-[8px] font-bold uppercase tracking-widest">{t.elements[attrs.element]}</span>
                           <span className="px-2 py-1 rounded-lg bg-white/5 text-[8px] font-bold uppercase tracking-widest">{t.modalities[attrs.modality]}</span>
                           <span className="px-2 py-1 rounded-lg bg-white/5 text-[8px] font-bold uppercase tracking-widest">{t.rulingPlanets[attrs.rulingPlanet]}</span>
+                          {item.house !== undefined && (
+                            <span className="px-2 py-1 rounded-lg bg-white/5 text-[8px] font-bold uppercase tracking-widest">
+                              {t.houseLabel.replace('{n}', item.house.toString())}
+                            </span>
+                          )}
                         </div>
                       </div>
                     </motion.div>
@@ -1583,30 +1776,6 @@ const AgeCalculator: React.FC = () => {
               </motion.div>
             )}
 
-            {/* Easter Date Section */}
-            {easterDate && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.85 }}
-                className={`p-6 rounded-3xl glass-card flex items-center justify-between border-l-4 border-yellow-500`}
-              >
-                <div className="flex items-center gap-4">
-                  <div className="p-3 rounded-2xl bg-yellow-500/20 text-yellow-500">
-                    <Sparkles size={16} />
-                  </div>
-                  <div>
-                    <div className={`text-xs font-bold uppercase tracking-widest ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                      {t.easterDate.replace('{year}', easterDate.getFullYear().toString())}
-                    </div>
-                    <div className="text-xl font-black">
-                      {easterDate.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}
-                    </div>
-                  </div>
-                </div>
-              </motion.div>
-            )}
-
             <motion.div 
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
@@ -1620,6 +1789,7 @@ const AgeCalculator: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <button
                   onClick={handleCopy}
+                  title={t.tooltips.copy}
                   className={`py-4 border rounded-2xl flex items-center justify-center gap-3 font-bold transition-all active:scale-[0.98] group ${
                     copied 
                       ? 'bg-emerald-500/20 border-emerald-500/50 text-emerald-500' 
@@ -1632,6 +1802,7 @@ const AgeCalculator: React.FC = () => {
 
                 <button
                   onClick={handleShare}
+                  title={t.tooltips.share}
                   className="py-4 bg-white/10 hover:bg-white/20 border border-white/20 rounded-2xl flex items-center justify-center gap-3 font-bold transition-all active:scale-[0.98] group"
                 >
                   <Share2 size={16} className="group-hover:text-blue-400 transition-colors" />

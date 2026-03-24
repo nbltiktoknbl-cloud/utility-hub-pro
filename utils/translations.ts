@@ -83,6 +83,11 @@ export interface TranslationSet {
   mercuryLabel: string;
   venusLabel: string;
   marsLabel: string;
+  jupiterLabel: string;
+  saturnLabel: string;
+  uranusLabel: string;
+  neptuneLabel: string;
+  plutoLabel: string;
   houseLabel: string;
   elementLabel: string;
   modalityLabel: string;
@@ -116,6 +121,21 @@ export interface TranslationSet {
   mercurySignInterpretations: Record<string, string>;
   venusSignInterpretations: Record<string, string>;
   marsSignInterpretations: Record<string, string>;
+  tooltips: {
+    dob: string;
+    birthTime: string;
+    timezone: string;
+    location: string;
+    calculate: string;
+    compare: string;
+    holiday: string;
+    rangeEnd: string;
+    targetYear: string;
+    share: string;
+    copy: string;
+    theme: string;
+    language: string;
+  };
 }
 
 export const translations: Record<LanguageCode, TranslationSet> = {
@@ -202,6 +222,11 @@ export const translations: Record<LanguageCode, TranslationSet> = {
     mercuryLabel: 'Mercury',
     venusLabel: 'Venus',
     marsLabel: 'Mars',
+    jupiterLabel: 'Jupiter',
+    saturnLabel: 'Saturn',
+    uranusLabel: 'Uranus',
+    neptuneLabel: 'Neptune',
+    plutoLabel: 'Pluto',
     houseLabel: 'House {n}',
     elementLabel: 'Element',
     modalityLabel: 'Modality',
@@ -227,7 +252,12 @@ export const translations: Record<LanguageCode, TranslationSet> = {
       moon: 'Moon',
       mercury: 'Mercury',
       venus: 'Venus',
-      mars: 'Mars'
+      mars: 'Mars',
+      jupiter: 'Jupiter',
+      saturn: 'Saturn',
+      uranus: 'Uranus',
+      neptune: 'Neptune',
+      pluto: 'Pluto'
     },
     planetMeanings: {
       sun: 'Represents your core identity, ego, and life force.',
@@ -235,7 +265,12 @@ export const translations: Record<LanguageCode, TranslationSet> = {
       mercury: 'Rules communication, intellect, and reasoning.',
       venus: 'Influences love, beauty, and personal values.',
       mars: 'Drives action, energy, and physical desire.',
-      rising: 'Represents your social personality and how others perceive you.'
+      rising: 'Represents your social personality and how others perceive you.',
+      jupiter: 'Governs expansion, luck, and higher learning.',
+      saturn: 'Rules structure, discipline, and responsibility.',
+      uranus: 'Influences innovation, rebellion, and change.',
+      neptune: 'Governs dreams, intuition, and spirituality.',
+      pluto: 'Rules transformation, power, and rebirth.'
     },
     zodiacInterpretationsTitle: 'Zodiac Interpretations',
     zodiacReferenceTitle: 'Explore the 12 Zodiac Signs',
@@ -405,6 +440,21 @@ export const translations: Record<LanguageCode, TranslationSet> = {
       capricorn: 'Disciplined, ambitious, and structured action. You value hard work.',
       aquarius: 'Innovative, original, and unconventional drive. You seek social progress.',
       pisces: 'Intuitive, imaginative, and gentle energy. You take action through creativity.'
+    },
+    tooltips: {
+      dob: 'Enter your date of birth to calculate your exact age and astrological details.',
+      birthTime: 'Enter your exact time of birth for a more precise birth chart calculation.',
+      timezone: 'Select the timezone of your birthplace to ensure astronomical accuracy.',
+      location: 'Enter the city and country where you were born for your birth chart.',
+      calculate: 'Click to calculate your exact age, life stats, and astrological profile.',
+      compare: 'Calculate the precise time difference between two specific dates.',
+      holiday: 'Enter a special date to see a real-time countdown until that event.',
+      rangeEnd: 'Enter the end date of a range to see your age span during that period.',
+      targetYear: 'Calculate what your age and astrological position will be in a future year.',
+      share: 'Share your age results and astrological profile with friends and family.',
+      copy: 'Copy your detailed age and life statistics to your clipboard.',
+      theme: 'Toggle between light and dark mode for your preferred viewing experience.',
+      language: 'Select your preferred language for the entire application interface.'
     }
   },
   es: {
@@ -490,6 +540,11 @@ export const translations: Record<LanguageCode, TranslationSet> = {
     mercuryLabel: 'Mercurio',
     venusLabel: 'Venus',
     marsLabel: 'Marte',
+    jupiterLabel: 'Júpiter',
+    saturnLabel: 'Saturno',
+    uranusLabel: 'Urano',
+    neptuneLabel: 'Neptuno',
+    plutoLabel: 'Plutón',
     houseLabel: 'Casa {n}',
     elementLabel: 'Elemento',
     modalityLabel: 'Modalidad',
@@ -693,6 +748,21 @@ export const translations: Record<LanguageCode, TranslationSet> = {
       capricorn: 'Acción disciplinada, ambiciosa y estructurada. Valoras el trabajo duro.',
       aquarius: 'Impulso innovador, original y poco convencional. Buscas el progreso social.',
       pisces: 'Energía intuitiva, imaginativa y gentil. Actúas a través de la creatividad.'
+    },
+    tooltips: {
+      dob: 'Ingresa tu fecha de nacimiento para calcular tu edad exacta y detalles astrológicos.',
+      birthTime: 'Ingresa tu hora exacta de nacimiento para un cálculo más preciso de tu carta natal.',
+      timezone: 'Selecciona la zona horaria de tu lugar de nacimiento para asegurar la precisión astronómica.',
+      location: 'Ingresa la ciudad y el país donde naciste para tu carta natal.',
+      calculate: 'Haz clic para calcular tu edad exacta, estadísticas de vida y perfil astrológico.',
+      compare: 'Calcula la diferencia de tiempo precisa entre dos fechas específicas.',
+      holiday: 'Ingresa una fecha especial para ver una cuenta regresiva en tiempo real hasta ese evento.',
+      rangeEnd: 'Ingresa la fecha de fin de un rango para ver tu lapso de edad durante ese período.',
+      targetYear: 'Calcula cuál será tu edad y posición astrológica en un año futuro.',
+      share: 'Comparte tus resultados de edad y perfil astrológico con amigos y familiares.',
+      copy: 'Copia tus estadísticas detalladas de edad y vida a tu portapapeles.',
+      theme: 'Alterna entre el modo claro y oscuro para tu experiencia de visualización preferida.',
+      language: 'Selecciona tu idioma preferido para toda la interfaz de la aplicación.'
     }
   },
   fr: {
@@ -778,6 +848,11 @@ export const translations: Record<LanguageCode, TranslationSet> = {
     mercuryLabel: 'Mercure',
     venusLabel: 'Vénus',
     marsLabel: 'Mars',
+    jupiterLabel: 'Jupiter',
+    saturnLabel: 'Saturne',
+    uranusLabel: 'Uranus',
+    neptuneLabel: 'Neptune',
+    plutoLabel: 'Pluton',
     houseLabel: 'Maison {n}',
     elementLabel: 'Élément',
     modalityLabel: 'Modalité',
@@ -981,6 +1056,21 @@ export const translations: Record<LanguageCode, TranslationSet> = {
       capricorn: 'Disciplined, ambitious, and structured action. You value hard work.',
       aquarius: 'Innovative, original, and unconventional drive. You seek social progress.',
       pisces: 'Intuitive, imaginative, and gentle energy. You take action through creativity.'
+    },
+    tooltips: {
+      dob: 'Entrez votre date de naissance pour calculer votre âge exact et vos détails astrologiques.',
+      birthTime: 'Entrez votre heure exacte de naissance pour un calcul plus précis de votre carte du ciel.',
+      timezone: 'Sélectionnez le fuseau horaire de votre lieu de naissance pour garantir la précision astronomique.',
+      location: 'Entrez la ville et le pays où vous êtes né pour votre carte du ciel.',
+      calculate: 'Cliquez pour calculer votre âge exact, vos statistiques de vie et votre profil astrologique.',
+      compare: 'Calculez la différence de temps précise entre deux dates spécifiques.',
+      holiday: 'Entrez une date spéciale pour voir un compte à rebours en temps réel jusqu\'à cet événement.',
+      rangeEnd: 'Entrez la date de fin d\'une plage pour voir votre étendue d\'âge pendant cette période.',
+      targetYear: 'Calculez quel sera votre âge et votre position astrologique dans une année future.',
+      share: 'Partagez vos résultats d\'âge et votre profil astrologique avec vos amis et votre famille.',
+      copy: 'Copiez vos statistiques détaillées d\'âge et de vie dans votre presse-papiers.',
+      theme: 'Basculez entre le mode clair et sombre pour votre expérience de visionnage préférée.',
+      language: 'Sélectionnez votre langue préférée pour toute l\'interface de l\'application.'
     }
   },
   de: {
@@ -1066,6 +1156,11 @@ export const translations: Record<LanguageCode, TranslationSet> = {
     mercuryLabel: 'Merkur',
     venusLabel: 'Venus',
     marsLabel: 'Mars',
+    jupiterLabel: 'Jupiter',
+    saturnLabel: 'Saturn',
+    uranusLabel: 'Uranus',
+    neptuneLabel: 'Neptun',
+    plutoLabel: 'Pluto',
     houseLabel: 'Haus {n}',
     elementLabel: 'Element',
     modalityLabel: 'Modalität',
@@ -1269,6 +1364,21 @@ export const translations: Record<LanguageCode, TranslationSet> = {
       capricorn: 'Diszipliniertes, ehrgeiziges und strukturiertes Handeln. Sie schätzen harte Arbeit.',
       aquarius: 'Innovativer, origineller und unkonventioneller Antrieb. Sie suchen sozialen Fortschritt.',
       pisces: 'Intuitive, fantasievolle und sanfte Energie. Sie handeln durch Kreativität.'
+    },
+    tooltips: {
+      dob: 'Geben Sie Ihr Geburtsdatum ein, um Ihr genaues Alter und astrologische Details zu berechnen.',
+      birthTime: 'Geben Sie Ihre genaue Geburtszeit für eine präzisere Berechnung Ihres Geburtshoroskops ein.',
+      timezone: 'Wählen Sie die Zeitzone Ihres Geburtsortes aus, um astronomische Genauigkeit zu gewährleisten.',
+      location: 'Geben Sie die Stadt und das Land ein, in dem Sie geboren wurden, für Ihr Geburtshoroskop.',
+      calculate: 'Klicken Sie hier, um Ihr genaues Alter, Ihre Lebensstatistiken und Ihr astrologisches Profil zu berechnen.',
+      compare: 'Berechnen Sie die präzise Zeitdifferenz zwischen zwei spezifischen Daten.',
+      holiday: 'Geben Sie ein besonderes Datum ein, um einen Echtzeit-Countdown bis zu diesem Ereignis zu sehen.',
+      rangeEnd: 'Geben Sie das Enddatum eines Bereichs ein, um Ihre Altersspanne in diesem Zeitraum zu sehen.',
+      targetYear: 'Berechnen Sie, wie Ihr Alter und Ihre astrologische Position in einem zukünftigen Jahr sein werden.',
+      share: 'Teilen Sie Ihre Altersergebnisse und Ihr astrologisches Profil mit Freunden und Familie.',
+      copy: 'Kopieren Sie Ihre detaillierten Alters- und Lebensstatistiken in Ihre Zwischenablage.',
+      theme: 'Wechseln Sie zwischen hellem und dunklem Modus für Ihr bevorzugtes Seherlebnis.',
+      language: 'Wählen Sie Ihre bevorzugte Sprache für die gesamte Benutzeroberfläche der Anwendung aus.'
     }
   },
   hi: {
@@ -1354,6 +1464,11 @@ export const translations: Record<LanguageCode, TranslationSet> = {
     mercuryLabel: 'बुध',
     venusLabel: 'शुक्र',
     marsLabel: 'मंगल',
+    jupiterLabel: 'बृहस्पति',
+    saturnLabel: 'शनि',
+    uranusLabel: 'अरुण',
+    neptuneLabel: 'वरुण',
+    plutoLabel: 'यम',
     houseLabel: 'भाव {n}',
     elementLabel: 'तत्व',
     modalityLabel: 'गुण',
@@ -1379,7 +1494,12 @@ export const translations: Record<LanguageCode, TranslationSet> = {
       moon: 'चंद्र',
       mercury: 'बुध',
       venus: 'शुक्र',
-      mars: 'मंगल'
+      mars: 'मंगल',
+      jupiter: 'बृहस्पति',
+      saturn: 'शनि',
+      uranus: 'अरुण',
+      neptune: 'वरुण',
+      pluto: 'यम'
     },
     planetMeanings: {
       sun: 'आपकी मुख्य पहचान, अहंकार और जीवन शक्ति का प्रतिनिधित्व करता है।',
@@ -1387,7 +1507,12 @@ export const translations: Record<LanguageCode, TranslationSet> = {
       mercury: 'संचार, बुद्धि और तर्क पर शासन करता है।',
       venus: 'प्रेम, सुंदरता और व्यक्तिगत मूल्यों को प्रभावित करता है।',
       mars: 'कार्रवाई, ऊर्जा और शारीरिक इच्छा को प्रेरित करता है।',
-      rising: 'आपके सामाजिक व्यक्तित्व और दूसरों द्वारा आपको कैसे देखा जाता है, इसका प्रतिनिधित्व करता है।'
+      rising: 'आपके सामाजिक व्यक्तित्व और दूसरों द्वारा आपको कैसे देखा जाता है, इसका प्रतिनिधित्व करता है।',
+      jupiter: 'विस्तार, भाग्य और उच्च शिक्षा को नियंत्रित करता है।',
+      saturn: 'संरचना, अनुशासन और जिम्मेदारी को नियंत्रित करता है।',
+      uranus: 'नवाचार, विद्रोह और परिवर्तन को प्रभावित करता है।',
+      neptune: 'सपनों, अंतर्ज्ञान और आध्यात्मिकता को नियंत्रित करता है।',
+      pluto: 'परिवर्तन, शक्ति और पुनर्जन्म को नियंत्रित करता है।'
     },
     zodiacInterpretationsTitle: 'राशि व्याख्या',
     zodiacReferenceTitle: '12 राशियों का अन्वेषण करें',
@@ -1557,6 +1682,21 @@ export const translations: Record<LanguageCode, TranslationSet> = {
       capricorn: 'अनुशासित, महत्वाकांक्षी और संरचित कार्रवाई। आप कड़ी मेहनत को महत्व देते हैं।',
       aquarius: 'अभिनव, मौलिक और अपरंपरागत प्रेरणा। आप सामाजिक प्रगति चाहते हैं।',
       pisces: 'सहज, कल्पनाशील और कोमल ऊर्जा। आप रचनात्मकता के माध्यम से कार्रवाई करते हैं।'
+    },
+    tooltips: {
+      dob: 'अपनी सटीक आयु और ज्योतिषीय विवरणों की गणना करने के लिए अपनी जन्म तिथि दर्ज करें।',
+      birthTime: 'अधिक सटीक जन्म कुंडली गणना के लिए अपने जन्म का सही समय दर्ज करें।',
+      timezone: 'खगोलीय सटीकता सुनिश्चित करने के लिए अपने जन्म स्थान का समय क्षेत्र चुनें।',
+      location: 'अपनी जन्म कुंडली के लिए वह शहर और देश दर्ज करें जहाँ आपका जन्म हुआ था।',
+      calculate: 'अपनी सटीक आयु, जीवन के आँकड़े और ज्योतिषीय प्रोफ़ाइल की गणना करने के लिए क्लिक करें।',
+      compare: 'दो विशिष्ट तिथियों के बीच सटीक समय अंतर की गणना करें।',
+      holiday: 'उस घटना तक वास्तविक समय की उलटी गिनती देखने के लिए एक विशेष तिथि दर्ज करें।',
+      rangeEnd: 'उस अवधि के दौरान अपनी आयु सीमा देखने के लिए एक सीमा की समाप्ति तिथि दर्ज करें।',
+      targetYear: 'गणना करें कि भविष्य के वर्ष में आपकी आयु और ज्योतिषीय स्थिति क्या होगी।',
+      share: 'अपने आयु परिणाम और ज्योतिषीय प्रोफ़ाइल मित्रों और परिवार के साथ साझा करें।',
+      copy: 'अपनी विस्तृत आयु और जीवन के आँकड़ों को अपने क्लिपबोर्ड पर कॉपी करें।',
+      theme: 'अपने पसंदीदा देखने के अनुभव के लिए लाइट और डार्क मोड के बीच स्विच करें।',
+      language: 'संपूर्ण एप्लिकेशन इंटरफ़ेस के लिए अपनी पसंदीदा भाषा चुनें।'
     }
   }
 };

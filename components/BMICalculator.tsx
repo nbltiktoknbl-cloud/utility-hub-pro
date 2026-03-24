@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { motion } from 'motion/react';
 import { Scale, Activity, Weight, Ruler } from 'lucide-react';
 import { useLanguage, useTheme } from '../context/AppContext';
+import NumericInput from './NumericInput';
 
 const BMICalculator: React.FC = () => {
   const { t, lang } = useLanguage();
@@ -45,10 +46,9 @@ const BMICalculator: React.FC = () => {
             {t.weightLabel}
           </label>
           <div className="relative">
-            <input
-              type="number"
+            <NumericInput
               value={weight}
-              onChange={(e) => setWeight(e.target.value)}
+              onChange={setWeight}
               placeholder={t.weightPlaceholder}
               className={`w-full p-4 pr-12 rounded-2xl border-2 transition-all outline-none font-bold text-lg ${
                 darkMode 
@@ -65,10 +65,9 @@ const BMICalculator: React.FC = () => {
             {t.heightLabel}
           </label>
           <div className="relative">
-            <input
-              type="number"
+            <NumericInput
               value={height}
-              onChange={(e) => setHeight(e.target.value)}
+              onChange={setHeight}
               placeholder={t.heightPlaceholder}
               className={`w-full p-4 pr-12 rounded-2xl border-2 transition-all outline-none font-bold text-lg ${
                 darkMode 
