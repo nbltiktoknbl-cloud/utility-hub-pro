@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { motion } from 'motion/react';
 import { Scale, Activity, Weight, Ruler } from 'lucide-react';
 import { useLanguage, useTheme } from '../context/AppContext';
 import NumericInput from './NumericInput';
@@ -27,9 +26,7 @@ const BMICalculator: React.FC = () => {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
+    <div
       className={`p-8 rounded-3xl glass-card shadow-2xl max-w-2xl mx-auto`}
     >
       <div className="flex items-center gap-4 mb-8">
@@ -93,9 +90,7 @@ const BMICalculator: React.FC = () => {
       </button>
 
       {result && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
+        <div
           className={`mt-8 p-8 rounded-3xl border-2 text-center ${
             darkMode ? 'bg-blue-500/10 border-blue-500/20' : 'bg-blue-50 border-blue-100'
           }`}
@@ -106,9 +101,9 @@ const BMICalculator: React.FC = () => {
           <div className="text-xl font-bold opacity-80">
             {t.bmiCategory.replace('{category}', result.category)}
           </div>
-        </motion.div>
+        </div>
       )}
-    </motion.div>
+    </div>
   );
 };
 

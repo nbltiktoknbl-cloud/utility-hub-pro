@@ -3,18 +3,12 @@ import { useLanguage, useTheme } from '../context/AppContext';
 import { calculateAge, AgeResult, calculateDateDifference, DateDiffResult } from '../utils/calculateAge';
 import BirthChartVisualizer from './BirthChartVisualizer';
 import { Calendar, Clock, Star, PartyPopper, Heart, Eye, Moon, Wind, Diamond, Share2, User, Globe, Sparkles, Copy, Check, BookOpen, Zap, ArrowUpRight, Award, Shield, Flame, Mountain, Waves } from 'lucide-react';
-import { motion, AnimatePresence } from 'motion/react';
 import { commonTimezones, getUserTimezone } from '../utils/timezones';
 
-const StatCard = ({ icon: Icon, label, value, color, delay = 0 }: { icon: any, label: string, value: string | number, color: string, delay?: number }) => {
+const StatCard = ({ icon: Icon, label, value, color }: { icon: any, label: string, value: string | number, color: string }) => {
   const { darkMode } = useTheme();
   return (
-    <motion.div 
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ delay }}
-      className={`p-4 rounded-2xl glass-card transition-all hover:scale-[1.02]`}
-    >
+    <div className={`p-4 rounded-2xl glass-card transition-all hover:scale-[1.02]`}>
       <div className="flex items-center gap-3 mb-2">
         <div className={`p-2 rounded-lg ${color}`}>
           <Icon size={14} className="text-white" />
@@ -24,7 +18,7 @@ const StatCard = ({ icon: Icon, label, value, color, delay = 0 }: { icon: any, l
       <div className="text-2xl font-black tracking-tight tabular-nums">
         {typeof value === 'number' ? value.toLocaleString() : value}
       </div>
-    </motion.div>
+    </div>
   );
 };
 
@@ -243,6 +237,11 @@ const AgeCalculator: React.FC = () => {
           if (showError) setError(t.errorInvalidDate);
           return;
         }
+
+        if (birthDate && birthDateEnd < birthDate) {
+          setError(t.errorStartDateAfterEndDate);
+          return;
+        }
       }
 
       // Validate Holiday if provided
@@ -251,6 +250,11 @@ const AgeCalculator: React.FC = () => {
         holiday = parseDate(holidayDay, holidayMonth, holidayYear, holidayHour, holidayMinute);
         if (!holiday) {
           if (showError) setError(t.errorInvalidDate);
+          return;
+        }
+
+        if (birthDate && holiday < birthDate) {
+          setError(t.errorBirthAfterTarget);
           return;
         }
       }
@@ -389,6 +393,11 @@ const AgeCalculator: React.FC = () => {
 
       if (!d1 || !d2) {
         setError(t.errorInvalidDate);
+        return;
+      }
+
+      if (d1 > d2) {
+        setError(t.errorStartDateAfterEndDate);
         return;
       }
 
@@ -1128,13 +1137,9 @@ const AgeCalculator: React.FC = () => {
         {error && <p className="mt-4 text-red-500 text-sm font-medium text-center">{error}</p>}
       </div>
 
-      <AnimatePresence mode="wait">
         {activeTab === 'compare' && compareResult && (
-          <motion.div
+          <div
             key="compare-result"
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
             className="space-y-8"
           >
             <div className="flex items-center justify-between mb-4">
@@ -1163,22 +1168,19 @@ const AgeCalculator: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-              <StatCard icon={Calendar} label={t.years} value={compareResult.years} color="bg-blue-500" delay={0.1} />
-              <StatCard icon={Calendar} label={t.months} value={compareResult.months} color="bg-indigo-500" delay={0.2} />
-              <StatCard icon={Calendar} label={t.weeks} value={compareResult.weeks} color="bg-purple-500" delay={0.3} />
-              <StatCard icon={Calendar} label={t.days} value={compareResult.days} color="bg-pink-500" delay={0.4} />
-              <StatCard icon={Clock} label={t.hours} value={compareResult.totalHours} color="bg-orange-500" delay={0.5} />
-              <StatCard icon={Clock} label={t.minutes} value={compareResult.totalMinutes} color="bg-emerald-500" delay={0.6} />
-              <StatCard icon={Clock} label={t.seconds} value={compareResult.totalSeconds} color="bg-cyan-500" delay={0.7} />
+              <StatCard icon={Calendar} label={t.years} value={compareResult.years} color="bg-blue-500" />
+              <StatCard icon={Calendar} label={t.months} value={compareResult.months} color="bg-indigo-500" />
+              <StatCard icon={Calendar} label={t.weeks} value={compareResult.weeks} color="bg-purple-500" />
+              <StatCard icon={Calendar} label={t.days} value={compareResult.days} color="bg-pink-500" />
+              <StatCard icon={Clock} label={t.hours} value={compareResult.totalHours} color="bg-orange-500" />
+              <StatCard icon={Clock} label={t.minutes} value={compareResult.totalMinutes} color="bg-emerald-500" />
+              <StatCard icon={Clock} label={t.seconds} value={compareResult.totalSeconds} color="bg-cyan-500" />
             </div>
-          </motion.div>
+          </div>
         )}
 
         {activeTab === 'calculate' && result && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
+          <div
             className="space-y-8"
           >
             <div className="flex items-center justify-between mb-4">
@@ -1200,19 +1202,19 @@ const AgeCalculator: React.FC = () => {
             </div>
             {/* Main Stats */}
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              <StatCard icon={Calendar} label={t.years} value={result.years} color="bg-blue-500" delay={0.1} />
-              <StatCard icon={User} label={t.ageLabel} value={Math.floor(result.years)} color="bg-blue-600" delay={0.12} />
-              <StatCard icon={Moon} label={t.lunarAge} value={result.lunarAge} color="bg-indigo-400" delay={0.14} />
-              <StatCard icon={Star} label={t.sunSignLabel} value={t.zodiacSigns[result.zodiacSign]} color="bg-orange-500" delay={0.145} />
-              <StatCard icon={Calendar} label={t.months} value={result.totalMonths} color="bg-indigo-500" delay={0.15} />
-              <StatCard icon={Calendar} label={t.weeks} value={result.weeks} color="bg-violet-500" delay={0.2} />
-              <StatCard icon={Calendar} label={t.days} value={result.totalDays} color="bg-purple-500" delay={0.25} />
-              <StatCard icon={Clock} label={t.hours} value={result.totalHours} color="bg-pink-500" delay={0.3} />
-              <StatCard icon={Clock} label={t.minutes} value={result.totalMinutes} color="bg-orange-500" delay={0.35} />
-              <StatCard icon={Clock} label={t.seconds} value={result.totalSeconds} color="bg-emerald-500" delay={0.4} />
-              <StatCard icon={Diamond} label={t.birthstone} value={t.birthstones[result.birthstone] || result.birthstone} color="bg-cyan-500" delay={0.45} />
-              <StatCard icon={Sparkles} label={t.chineseZodiacLabel} value={t.chineseZodiacSigns[result.chineseZodiac]} color="bg-red-600" delay={0.48} />
-              <StatCard icon={Moon} label={t.lunarPhaseLabel} value={t.lunarPhases[result.lunarPhase]} color="bg-slate-700" delay={0.5} />
+              <StatCard icon={Calendar} label={t.years} value={result.years} color="bg-blue-500" />
+              <StatCard icon={User} label={t.ageLabel} value={Math.floor(result.years)} color="bg-blue-600" />
+              <StatCard icon={Moon} label={t.lunarAge} value={result.lunarAge} color="bg-indigo-400" />
+              <StatCard icon={Star} label={t.sunSignLabel} value={t.zodiacSigns[result.zodiacSign]} color="bg-orange-500" />
+              <StatCard icon={Calendar} label={t.months} value={result.totalMonths} color="bg-indigo-500" />
+              <StatCard icon={Calendar} label={t.weeks} value={result.weeks} color="bg-violet-500" />
+              <StatCard icon={Calendar} label={t.days} value={result.totalDays} color="bg-purple-500" />
+              <StatCard icon={Clock} label={t.hours} value={result.totalHours} color="bg-pink-500" />
+              <StatCard icon={Clock} label={t.minutes} value={result.totalMinutes} color="bg-orange-500" />
+              <StatCard icon={Clock} label={t.seconds} value={result.totalSeconds} color="bg-emerald-500" />
+              <StatCard icon={Diamond} label={t.birthstone} value={t.birthstones[result.birthstone] || result.birthstone} color="bg-cyan-500" />
+              <StatCard icon={Sparkles} label={t.chineseZodiacLabel} value={t.chineseZodiacSigns[result.chineseZodiac]} color="bg-red-600" />
+              <StatCard icon={Moon} label={t.lunarPhaseLabel} value={t.lunarPhases[result.lunarPhase]} color="bg-slate-700" />
             </div>
 
             {/* The Big Three Summary */}
@@ -1230,11 +1232,8 @@ const AgeCalculator: React.FC = () => {
                   const attrs = signAttributes[item.sign];
                   const ElementIcon = elementIcons[attrs.element];
                   return (
-                    <motion.div
+                    <div
                       key={item.label}
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      transition={{ delay: 0.5 + idx * 0.1 }}
                       className={`p-6 rounded-3xl glass-card border-t-4 ${item.borderColor} flex flex-col gap-4 transition-all hover:scale-[1.02]`}
                     >
                       <div className="flex items-center justify-between">
@@ -1288,7 +1287,7 @@ const AgeCalculator: React.FC = () => {
                           </p>
                         </div>
                       </div>
-                    </motion.div>
+                    </div>
                   );
                 })}
               </div>
@@ -1300,10 +1299,7 @@ const AgeCalculator: React.FC = () => {
                 <Moon className="text-slate-500" size={16} />
                 {t.lunarPhaseLabel}
               </h3>
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.6 }}
+              <div
                 className={`p-6 rounded-3xl glass-card border-t-4 border-slate-500/30 flex flex-col gap-4 transition-all hover:scale-[1.02]`}
               >
                 <div className="flex items-center gap-3">
@@ -1334,7 +1330,7 @@ const AgeCalculator: React.FC = () => {
                     </p>
                   </div>
                 </div>
-              </motion.div>
+              </div>
             </div>
 
             {/* Life Stats */}
@@ -1344,19 +1340,16 @@ const AgeCalculator: React.FC = () => {
                 {t.lifeStatsTitle}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard icon={Heart} label={t.heartbeats} value={result.lifeStats.heartbeats} color="bg-red-500" delay={0.5} />
-                <StatCard icon={Eye} label={t.eyeBlinks} value={result.lifeStats.eyeBlinks} color="bg-blue-400" delay={0.55} />
-                <StatCard icon={Moon} label={t.sleepTime} value={`${result.lifeStats.sleepDays} ${t.days.toLowerCase()}`} color="bg-indigo-700" delay={0.6} />
-                <StatCard icon={Wind} label={t.breathCount} value={result.lifeStats.breaths} color="bg-teal-500" delay={0.65} />
+                <StatCard icon={Heart} label={t.heartbeats} value={result.lifeStats.heartbeats} color="bg-red-500" />
+                <StatCard icon={Eye} label={t.eyeBlinks} value={result.lifeStats.eyeBlinks} color="bg-blue-400" />
+                <StatCard icon={Moon} label={t.sleepTime} value={`${result.lifeStats.sleepDays} ${t.days.toLowerCase()}`} color="bg-indigo-700" />
+                <StatCard icon={Wind} label={t.breathCount} value={result.lifeStats.breaths} color="bg-teal-500" />
               </div>
             </div>
 
             {/* Easter Date Section */}
             {easterDate && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 0.68 }}
+              <div
                 className={`p-6 rounded-3xl glass-card flex items-center justify-between border-l-4 border-yellow-500 bg-gradient-to-r from-yellow-500/5 to-transparent`}
               >
                 <div className="flex items-center gap-4">
@@ -1380,7 +1373,7 @@ const AgeCalculator: React.FC = () => {
                     {t.zodiacSigns['aries']} / {t.zodiacSigns['pisces']}
                   </div>
                 </div>
-              </motion.div>
+              </div>
             )}
 
             {/* Next Birthday Countdown Timer */}
@@ -1390,27 +1383,26 @@ const AgeCalculator: React.FC = () => {
                 {t.nextBirthday}
               </h3>
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                {[
-                  { label: t.days, value: result.nextBirthday.days },
-                  { label: t.hours, value: result.nextBirthday.hours },
-                  { label: t.minutes, value: result.nextBirthday.minutes },
-                  { label: t.seconds, value: result.nextBirthday.seconds },
-                ].map((item, idx) => (
-                  <motion.div
-                    key={item.label}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ delay: 0.7 + idx * 0.05 }}
-                    className="p-6 rounded-3xl glass-card flex flex-col items-center justify-center text-center border-b-4 border-yellow-500/30"
-                  >
-                    <div className="text-4xl font-black tabular-nums text-yellow-500">
-                      {item.value.toString().padStart(2, '0')}
+                {
+                  [
+                    { label: t.days, value: result.nextBirthday.days },
+                    { label: t.hours, value: result.nextBirthday.hours },
+                    { label: t.minutes, value: result.nextBirthday.minutes },
+                    { label: t.seconds, value: result.nextBirthday.seconds },
+                  ].map((item, idx) => (
+                    <div
+                      key={item.label}
+                      className="p-6 rounded-3xl glass-card flex flex-col items-center justify-center text-center border-b-4 border-yellow-500/30"
+                    >
+                      <div className="text-4xl font-black tabular-nums text-yellow-500">
+                        {item.value.toString().padStart(2, '0')}
+                      </div>
+                      <div className={`text-[10px] font-bold uppercase tracking-widest mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                        {item.label}
+                      </div>
                     </div>
-                    <div className={`text-[10px] font-bold uppercase tracking-widest mt-1 ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                      {item.label}
-                    </div>
-                  </motion.div>
-                ))}
+                  ))
+                }
               </div>
             </div>
 
@@ -1423,13 +1415,9 @@ const AgeCalculator: React.FC = () => {
               </h3>
 
               <div className="space-y-8">
-                <motion.div
-                  initial={{ opacity: 0, scale: 0.95 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.7 }}
-                >
+                <div>
                   <BirthChartVisualizer result={deferredResult} t={t} darkMode={darkMode} />
-                </motion.div>
+                </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
                   {[
@@ -1475,11 +1463,8 @@ const AgeCalculator: React.FC = () => {
                   ].map((item, idx) => {
                     const attrs = signAttributes[item.sign] || { element: 'fire', modality: 'cardinal', rulingPlanet: 'mars' };
                     return (
-                      <motion.div
+                      <div
                         key={item.planet}
-                        initial={{ opacity: 0, y: 20 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        transition={{ delay: 0.75 + idx * 0.1 }}
                         className={`p-6 rounded-3xl glass-card border-l-8 ${item.color} bg-gradient-to-br ${item.bgColor} to-transparent shadow-xl flex flex-col`}
                       >
                         <div className="flex flex-col gap-4">
@@ -1540,7 +1525,7 @@ const AgeCalculator: React.FC = () => {
                             </div>
                           </div>
                         </div>
-                      </motion.div>
+                      </div>
                     );
                   })}
                 </div>
@@ -1558,11 +1543,8 @@ const AgeCalculator: React.FC = () => {
                 ].map((item, idx) => {
                   const attrs = signAttributes[item.sign] || { element: 'fire', modality: 'cardinal', rulingPlanet: 'mars' };
                   return (
-                    <motion.div
+                    <div
                       key={item.label}
-                      initial={{ opacity: 0, x: -20 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      transition={{ delay: 0.8 + idx * 0.05 }}
                       className={`p-6 rounded-3xl glass-card border-l-4 ${item.color}`}
                     >
                       <div className={`text-xs font-bold uppercase tracking-widest ${item.iconColor} mb-1`}>{item.label}</div>
@@ -1623,17 +1605,14 @@ const AgeCalculator: React.FC = () => {
                           {t.zodiacDescriptions[item.sign]}
                         </p>
                       </div>
-                    </motion.div>
+                    </div>
                   );
                 })}
               </div>
 
               {/* Houses & Aspects */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 1 }}
+                <div
                   className="p-6 rounded-3xl glass-card"
                 >
                   <h4 className="text-sm font-bold uppercase tracking-widest mb-4 flex items-center gap-2">
@@ -1657,15 +1636,12 @@ const AgeCalculator: React.FC = () => {
                       );
                     })}
                   </div>
-                </motion.div>
+                </div>
               </div>
 
               {/* Astrological Aspects */}
               {result.aspects.length > 0 && (
-                <motion.div
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 1.05 }}
+                <div
                   className="p-6 rounded-3xl glass-card"
                 >
                   <h4 className="text-sm font-bold uppercase tracking-widest mb-4 flex items-center gap-2">
@@ -1697,7 +1673,7 @@ const AgeCalculator: React.FC = () => {
                       </div>
                     ))}
                   </div>
-                </motion.div>
+                </div>
               )}
             </div>
 
@@ -1720,11 +1696,8 @@ const AgeCalculator: React.FC = () => {
                 ].map((item, idx) => {
                   const attrs = signAttributes[item.sign] || { element: 'fire', modality: 'cardinal', rulingPlanet: 'mars' };
                   return (
-                    <motion.div 
+                    <div 
                       key={idx}
-                      initial={{ opacity: 0, scale: 0.95 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      transition={{ delay: 0.75 + idx * 0.1 }}
                       className={`p-6 rounded-3xl glass-card flex flex-col items-center text-center gap-4 border-t border-white/5`}
                     >
                       <div className={`p-4 rounded-full bg-white/5 text-white shadow-inner`}>
@@ -1747,16 +1720,13 @@ const AgeCalculator: React.FC = () => {
                           )}
                         </div>
                       </div>
-                    </motion.div>
+                    </div>
                   );
                 })}
               </div>
 
               {/* Detailed Interpretations */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.1 }}
+              <div
                 className="p-8 rounded-3xl glass-card border border-white/5"
               >
                 <h3 className="text-xl font-black tracking-tight flex items-center gap-2 mb-6">
@@ -1826,13 +1796,10 @@ const AgeCalculator: React.FC = () => {
                     </div>
                   ))}
                 </div>
-              </motion.div>
+              </div>
 
               {/* Chinese Zodiac Interpretation */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.2 }}
+              <div
                 className="p-8 rounded-3xl glass-card border border-white/5 bg-gradient-to-br from-red-500/5 to-transparent"
               >
                 <div className="flex gap-6 items-center">
@@ -1848,13 +1815,10 @@ const AgeCalculator: React.FC = () => {
                     </p>
                   </div>
                 </div>
-              </motion.div>
+              </div>
 
               {/* Zodiac Signs Reference */}
-              <motion.div
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: 1.3 }}
+              <div
                 className="space-y-6"
               >
                 <div className="flex items-center gap-4 px-2">
@@ -1871,9 +1835,8 @@ const AgeCalculator: React.FC = () => {
                     'aries', 'taurus', 'gemini', 'cancer', 'leo', 'virgo',
                     'libra', 'scorpio', 'sagittarius', 'capricorn', 'aquarius', 'pisces'
                   ].map((sign) => (
-                    <motion.div
+                    <div
                       key={sign}
-                      whileHover={{ y: -5 }}
                       className="p-6 rounded-3xl glass-card border border-white/5 hover:border-white/10 transition-all duration-300 group"
                     >
                       <div className="flex items-center gap-4 mb-4">
@@ -1903,16 +1866,14 @@ const AgeCalculator: React.FC = () => {
                       <p className={`text-xs leading-relaxed ${darkMode ? 'text-gray-400' : 'text-gray-500'}`}>
                         {t.zodiacDescriptions[sign]}
                       </p>
-                    </motion.div>
+                    </div>
                   ))}
                 </div>
-              </motion.div>
+              </div>
             </div>
 
             {holidayCountdown !== null && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
+              <div
                 className="p-8 rounded-3xl glass-card border border-emerald-500/30 space-y-4"
               >
                 <h3 className="text-xl font-black tracking-tight flex items-center justify-center gap-2 text-emerald-500">
@@ -1936,13 +1897,11 @@ const AgeCalculator: React.FC = () => {
                     </div>
                   ))}
                 </div>
-              </motion.div>
+              </div>
             )}
 
             {ageRange && (
-              <motion.div
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
+              <div
                 className="space-y-4"
               >
                 <div className={`p-6 rounded-3xl text-center font-black text-xl bg-gradient-to-r from-blue-500/20 to-indigo-500/20 border border-blue-500/30 ${darkMode ? 'text-blue-400' : 'text-blue-700'}`}>
@@ -1956,13 +1915,10 @@ const AgeCalculator: React.FC = () => {
                     .replace('{months}', Math.abs(ageRange.diff.months).toString())
                     .replace('{days}', Math.abs(ageRange.diff.days).toString())}
                 </div>
-              </motion.div>
+              </div>
             )}
 
-            <motion.div 
-              initial={{ opacity: 0, scale: 0.95 }}
-              animate={{ opacity: 1, scale: 1 }}
-              transition={{ delay: 0.8 }}
+            <div 
               className="space-y-4"
             >
               <div className={`p-8 rounded-3xl text-center font-bold text-lg glass border-blue-500/20 ${darkMode ? 'text-blue-300' : 'text-blue-700'}`}>
@@ -1996,10 +1952,10 @@ const AgeCalculator: React.FC = () => {
                   {copied ? t.copiedLabel : t.shareBtn}
                 </button>
               </div>
-            </motion.div>
-          </motion.div>
+            </div>
+          </div>
         )}
-      </AnimatePresence>
+      {/* </AnimatePresence> */}
     </div>
   );
 };

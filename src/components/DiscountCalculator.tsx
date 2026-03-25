@@ -1,5 +1,4 @@
 import React, { useState } from 'react';
-import { motion } from 'motion/react';
 import { Tag, ShoppingCart } from 'lucide-react';
 import { useLanguage, useTheme } from '../context/AppContext';
 import NumericInput from './NumericInput';
@@ -35,11 +34,7 @@ const DiscountCalculator: React.FC = () => {
   };
 
   return (
-    <motion.div
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      className={`p-8 rounded-3xl glass-card shadow-2xl max-w-2xl mx-auto`}
-    >
+    <div className={`p-8 rounded-3xl glass-card shadow-2xl max-w-2xl mx-auto`}>
       <div className="flex items-center gap-4 mb-8">
         <div className={`p-3 rounded-2xl ${darkMode ? 'bg-emerald-500/20 text-emerald-400' : 'bg-emerald-100 text-emerald-600'}`}>
           <Tag size={18} />
@@ -93,20 +88,13 @@ const DiscountCalculator: React.FC = () => {
       </button>
 
       {error && (
-        <motion.div
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mt-6 p-4 rounded-2xl bg-red-500/10 border-2 border-red-500/20 text-red-500 text-center font-bold"
-        >
+        <div className="mt-6 p-4 rounded-2xl bg-red-500/10 border-2 border-red-500/20 text-red-500 text-center font-bold">
           {error}
-        </motion.div>
+        </div>
       )}
 
       {result && (
-        <motion.div
-          initial={{ opacity: 0, scale: 0.9 }}
-          animate={{ opacity: 1, scale: 1 }}
-          className={`mt-8 p-8 rounded-3xl border-2 text-center ${
+        <div className={`mt-8 p-8 rounded-3xl border-2 text-center ${
             darkMode ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-emerald-50 border-emerald-100'
           }`}
         >
@@ -116,9 +104,9 @@ const DiscountCalculator: React.FC = () => {
           <div className="text-xl font-bold opacity-80 text-emerald-600">
             {t.savingsLabel.replace('{savings}', result.savings.toString())}
           </div>
-        </motion.div>
+        </div>
       )}
-    </motion.div>
+    </div>
   );
 };
 

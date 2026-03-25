@@ -2,7 +2,11 @@ import React from 'react';
 import { useLanguage, useTheme } from '../context/AppContext';
 import Logo from './Logo';
 
-const Footer: React.FC = () => {
+interface FooterProps {
+  setActivePage: (page: 'home' | 'about' | 'contact' | 'age' | 'bmi' | 'discount' | 'percentage' | 'privacy') => void;
+}
+
+const Footer: React.FC<FooterProps> = ({ setActivePage }) => {
   const { t } = useLanguage();
   const { darkMode } = useTheme();
 
@@ -16,9 +20,9 @@ const Footer: React.FC = () => {
           {t.footerText}
         </p>
         <div className="flex justify-center gap-6 text-xs uppercase tracking-widest font-bold">
-          <a href="#" className="hover:text-blue-500 transition-colors">{t.privacyPolicy}</a>
-          <a href="#" className="hover:text-blue-500 transition-colors">{t.termsOfService}</a>
-          <a href="#" className="hover:text-blue-500 transition-colors">{t.contact}</a>
+          <button onClick={() => setActivePage('privacy')} className="hover:text-blue-500 transition-colors uppercase">{t.privacyPolicy}</button>
+          <button onClick={() => setActivePage('home')} className="hover:text-blue-500 transition-colors uppercase">{t.termsOfService}</button>
+          <button onClick={() => setActivePage('contact')} className="hover:text-blue-500 transition-colors uppercase">{t.contact}</button>
         </div>
       </div>
     </footer>

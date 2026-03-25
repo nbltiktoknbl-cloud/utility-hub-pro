@@ -4,8 +4,8 @@ import { Calculator, Scale, Tag, Moon, Sun, Globe } from 'lucide-react';
 import Logo from './Logo';
 
 interface NavbarProps {
-  activePage: 'home' | 'about' | 'contact' | 'age' | 'bmi' | 'discount' | 'percentage';
-  setActivePage: (page: 'home' | 'about' | 'contact' | 'age' | 'bmi' | 'discount' | 'percentage') => void;
+  activePage: 'home' | 'about' | 'contact' | 'age' | 'bmi' | 'discount' | 'percentage' | 'privacy';
+  setActivePage: (page: 'home' | 'about' | 'contact' | 'age' | 'bmi' | 'discount' | 'percentage' | 'privacy') => void;
 }
 
 const Navbar: React.FC<NavbarProps> = ({ activePage, setActivePage }) => {

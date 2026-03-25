@@ -105,6 +105,12 @@ export interface TranslationSet {
   globalDesc: string;
   privacyPolicy: string;
   termsOfService: string;
+  privacyPolicyTitle: string;
+  privacyPolicyLastUpdated: string;
+  privacyPolicySections: {
+    title: string;
+    content: string;
+  }[];
   birthChartTitle: string;
   birthLocationLabel: string;
   sunSignLabel: string;
@@ -281,6 +287,34 @@ export const translations: Record<LanguageCode, TranslationSet> = {
     globalDesc: 'Available in multiple languages and timezones to serve users worldwide.',
     privacyPolicy: 'Privacy Policy',
     termsOfService: 'Terms of Service',
+    privacyPolicyTitle: 'Privacy Policy',
+    privacyPolicyLastUpdated: 'Last Updated: March 25, 2026',
+    privacyPolicySections: [
+      {
+        title: 'Introduction',
+        content: 'Welcome to Utility Hub Pro. We value your privacy and are committed to protecting your personal data. This Privacy Policy explains how we handle information when you use our website and tools.'
+      },
+      {
+        title: 'Data Collection',
+        content: 'We do not collect or store any personal information on our servers. All calculations, including age, BMI, and birth charts, are performed locally in your browser. We do not have access to the data you enter into our tools.'
+      },
+      {
+        title: 'Cookies and Tracking',
+        content: 'We use local storage only to remember your preferences, such as your selected language and theme (light/dark mode). We do not use tracking cookies or third-party analytics that identify you personally.'
+      },
+      {
+        title: 'Third-Party Services',
+        content: 'Our website may contain links to other sites. We are not responsible for the privacy practices of those sites. We encourage you to read their privacy policies.'
+      },
+      {
+        title: 'Data Security',
+        content: 'Since we do not collect your data, there is no risk of your personal information being leaked from our servers. However, we recommend using a secure browser and keeping your device protected.'
+      },
+      {
+        title: 'Contact Us',
+        content: 'If you have any questions about this Privacy Policy, you can contact us through our Contact page.'
+      }
+    ],
     birthChartTitle: 'Your Birth Chart',
     birthLocationLabel: 'Birth Location (City, Country)',
     birthTimeLabel: 'Birth Time',
@@ -700,6 +734,34 @@ export const translations: Record<LanguageCode, TranslationSet> = {
     globalDesc: 'Disponible en múltiples idiomas y zonas horarias para servir a usuarios de todo el mundo.',
     privacyPolicy: 'Política de Privacidad',
     termsOfService: 'Términos de Servicio',
+    privacyPolicyTitle: 'Política de Privacidad',
+    privacyPolicyLastUpdated: 'Última actualización: 25 de marzo de 2026',
+    privacyPolicySections: [
+      {
+        title: 'Introducción',
+        content: 'Bienvenido a Utility Hub Pro. Valoramos su privacidad y nos comprometemos a proteger sus datos personales. Esta Política de Privacidad explica cómo manejamos la información cuando utiliza nuestro sitio web y herramientas.'
+      },
+      {
+        title: 'Recopilación de Datos',
+        content: 'No recopilamos ni almacenamos ninguna información personal en nuestros servidores. Todos los cálculos, incluidos la edad, el IMC y las cartas natales, se realizan localmente en su navegador. No tenemos acceso a los datos que ingresa en nuestras herramientas.'
+      },
+      {
+        title: 'Cookies y Seguimiento',
+        content: 'Utilizamos el almacenamiento local solo para recordar sus preferencias, como el idioma y el tema seleccionados (modo claro/oscuro). No utilizamos cookies de seguimiento ni análisis de terceros que lo identifiquen personalmente.'
+      },
+      {
+        title: 'Servicios de Terceros',
+        content: 'Nuestro sitio web puede contener enlaces a otros sitios. No somos responsables de las prácticas de privacidad de esos sitios. Le recomendamos que lea sus políticas de privacidad.'
+      },
+      {
+        title: 'Seguridad de los Datos',
+        content: 'Dado que no recopilamos sus datos, no hay riesgo de que su información personal se filtre de nuestros servidores. Sin embargo, recomendamos utilizar un navegador seguro y mantener su dispositivo protegido.'
+      },
+      {
+        title: 'Contáctenos',
+        content: 'Si tiene alguna pregunta sobre esta Política de Privacidad, puede contactarnos a través de nuestra página de Contacto.'
+      }
+    ],
     aspectsTitle: 'Aspectos Astrológicos',
     aspectTypes: {
       conjunction: 'Conjunción',
@@ -1064,6 +1126,34 @@ export const translations: Record<LanguageCode, TranslationSet> = {
     globalDesc: 'Disponible dans plusieurs langues et fuseaux horaires pour servir les utilisateurs du monde entier.',
     privacyPolicy: 'Politique de confidentialité',
     termsOfService: 'Conditions d\'utilisation',
+    privacyPolicyTitle: 'Politique de confidentialité',
+    privacyPolicyLastUpdated: 'Dernière mise à jour : 25 mars 2026',
+    privacyPolicySections: [
+      {
+        title: 'Introduction',
+        content: 'Bienvenue sur Utility Hub Pro. Nous accordons une grande importance à votre vie privée et nous nous engageons à protéger vos données personnelles. Cette politique de confidentialité explique comment nous traitons les informations lorsque vous utilisez notre site web et nos outils.'
+      },
+      {
+        title: 'Collecte de données',
+        content: 'Nous ne collectons ni ne stockons aucune information personnelle sur nos serveurs. Tous les calculs, y compris l\'âge, l\'IMC et les thèmes astraux, sont effectués localement dans votre navigateur. Nous n\'avons pas accès aux données que vous saisissez dans nos outils.'
+      },
+      {
+        title: 'Cookies et suivi',
+        content: 'Nous utilisons le stockage local uniquement pour enregistrer vos préférences, telles que la langue choisie et le thème (mode clair/sombre). Nous n\'utilisons pas de cookies de suivi ou d\'analyses tierces qui vous identifient personnellement.'
+      },
+      {
+        title: 'Services tiers',
+        content: 'Notre site web peut contenir des liens vers d\'autres sites. Nous ne sommes pas responsables des pratiques de confidentialité de ces sites. Nous vous encourageons à lire leurs politiques de confidentialité.'
+      },
+      {
+        title: 'Sécurité des données',
+        content: 'Comme nous ne collectons pas vos données, il n\'y a aucun risque que vos informations personnelles soient divulguées par nos serveurs. Cependant, nous vous recommandons d\'utiliser un navigateur sécurisé et de protéger votre appareil.'
+      },
+      {
+        title: 'Contactez-nous',
+        content: 'Si vous avez des questions concernant cette politique de confidentialité, vous pouvez nous contacter via notre page de contact.'
+      }
+    ],
     aspectsTitle: 'Aspects Astrologiques',
     aspectTypes: {
       conjunction: 'Conjonction',
@@ -1428,6 +1518,34 @@ export const translations: Record<LanguageCode, TranslationSet> = {
     globalDesc: 'Verfügbar in mehreren Sprachen und Zeitzonen, um Benutzer weltweit zu bedienen.',
     privacyPolicy: 'Datenschutzerklärung',
     termsOfService: 'Nutzungsbedingungen',
+    privacyPolicyTitle: 'Datenschutzerklärung',
+    privacyPolicyLastUpdated: 'Zuletzt aktualisiert: 25. März 2026',
+    privacyPolicySections: [
+      {
+        title: 'Einleitung',
+        content: 'Willkommen bei Utility Hub Pro. Wir schätzen Ihre Privatsphäre und verpflichten uns zum Schutz Ihrer persönlichen Daten. Diese Datenschutzerklärung erklärt, wie wir mit Informationen umgehen, wenn Sie unsere Website und Tools nutzen.'
+      },
+      {
+        title: 'Datenerhebung',
+        content: 'Wir erheben oder speichern keine persönlichen Informationen auf unseren Servern. Alle Berechnungen, einschließlich Alter, BMI und Geburtshoroskope, werden lokal in Ihrem Browser durchgeführt. Wir haben keinen Zugriff auf die Daten, die Sie in unsere Tools eingeben.'
+      },
+      {
+        title: 'Cookies und Tracking',
+        content: 'Wir verwenden den lokalen Speicher nur, um Ihre Präferenzen zu speichern, wie z. B. Ihre gewählte Sprache und das Thema (Hell-/Dunkelmodus). Wir verwenden keine Tracking-Cookies oder Analysen von Drittanbietern, die Sie persönlich identifizieren.'
+      },
+      {
+        title: 'Dienste von Drittanbietern',
+        content: 'Unsere Website kann Links zu anderen Websites enthalten. Wir sind nicht für die Datenschutzpraktiken dieser Websites verantwortlich. Wir empfehlen Ihnen, deren Datenschutzerklärungen zu lesen.'
+      },
+      {
+        title: 'Datensicherheit',
+        content: 'Da wir Ihre Daten nicht erheben, besteht kein Risiko, dass Ihre persönlichen Informationen von unseren Servern durchsickern. Wir empfehlen jedoch, einen sicheren Browser zu verwenden und Ihr Gerät zu schützen.'
+      },
+      {
+        title: 'Kontaktieren Sie uns',
+        content: 'Wenn Sie Fragen zu dieser Datenschutzerklärung haben, können Sie uns über unsere Kontaktseite kontaktieren.'
+      }
+    ],
     aspectsTitle: 'Astrologische Aspekte',
     aspectTypes: {
       conjunction: 'Konjunktion',
@@ -1792,6 +1910,34 @@ export const translations: Record<LanguageCode, TranslationSet> = {
     globalDesc: 'दुनिया भर के उपयोगकर्ताओं की सेवा के लिए कई भाषाओं और समय क्षेत्रों में उपलब्ध है।',
     privacyPolicy: 'गोपनीयता नीति',
     termsOfService: 'सेवा की शर्तें',
+    privacyPolicyTitle: 'गोपनीयता नीति',
+    privacyPolicyLastUpdated: 'अंतिम अपडेट: 25 मार्च 2026',
+    privacyPolicySections: [
+      {
+        title: 'परिचय',
+        content: 'Utility Hub Pro में आपका स्वागत है। हम आपकी गोपनीयता को महत्व देते हैं और आपकी व्यक्तिगत जानकारी की सुरक्षा के लिए प्रतिबद्ध हैं। यह गोपनीयता नीति बताती है कि जब आप हमारी वेबसाइट और उपकरणों का उपयोग करते हैं तो हम जानकारी को कैसे संभालते हैं।'
+      },
+      {
+        title: 'डेटा संग्रह',
+        content: 'हम अपने सर्वर पर कोई व्यक्तिगत जानकारी एकत्र या संग्रहीत नहीं करते हैं। आयु, बीएमआई और जन्म कुंडली सहित सभी गणनाएं आपके ब्राउज़र में स्थानीय रूप से की जाती हैं। हमारे पास उन डेटा तक पहुंच नहीं है जो आप हमारे उपकरणों में दर्ज करते हैं।'
+      },
+      {
+        title: 'कुकीज़ और ट्रैकिंग',
+        content: 'हम स्थानीय भंडारण का उपयोग केवल आपकी प्राथमिकताओं को सहेजने के लिए करते हैं, जैसे कि आपकी चुनी हुई भाषा और थीम (लाइट/डार्क मोड)। हम किसी भी ट्रैकिंग कुकीज़ या तृतीय-पक्ष विश्लेषण का उपयोग नहीं करते हैं जो आपकी व्यक्तिगत पहचान करते हैं।'
+      },
+      {
+        title: 'तृतीय-पक्ष सेवाएँ',
+        content: 'हमारी वेबसाइट में अन्य वेबसाइटों के लिंक हो सकते हैं। हम उन वेबसाइटों की गोपनीयता प्रथाओं के लिए ज़िम्मेदार नहीं हैं। हम आपको उनकी गोपनीयता नीतियों को पढ़ने के लिए प्रोत्साहित करते हैं।'
+      },
+      {
+        title: 'डेटा सुरक्षा',
+        content: 'चूंकि हम आपका डेटा एकत्र नहीं करते हैं, इसलिए हमारे सर्वर से आपकी व्यक्तिगत जानकारी लीक होने का कोई जोखिम नहीं है। हालांकि, हम एक सुरक्षित ब्राउज़र का उपयोग करने और अपने डिवाइस की सुरक्षा करने की सलाह देते हैं।'
+      },
+      {
+        title: ' हमसे संपर्क करें',
+        content: 'यदि इस गोपनीयता नीति के बारे में आपके कोई प्रश्न हैं, तो आप हमारे संपर्क पृष्ठ के माध्यम से हमसे संपर्क कर सकते हैं।'
+      }
+    ],
     aspectsTitle: 'ज्योतिषीय दृष्टि',
     aspectTypes: {
       conjunction: 'युति',
