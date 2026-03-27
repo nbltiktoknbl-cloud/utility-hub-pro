@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Scale, Activity, Weight, Ruler } from 'lucide-react';
-import { useLanguage, useTheme } from '../context/AppContext';
+import { useLanguage, useTheme } from '@/src/context/AppContext';
 import NumericInput from './NumericInput';
 
 const BMICalculator: React.FC = () => {
@@ -10,7 +10,7 @@ const BMICalculator: React.FC = () => {
   const [height, setHeight] = useState<string>('');
   const [result, setResult] = useState<{ bmi: number; category: string } | null>(null);
 
-  const calculateBMI = () => {
+  const calculateBMI = React.useCallback(() => {
     const w = parseFloat(weight);
     const h = parseFloat(height) / 100;
     if (w > 0 && h > 0) {
@@ -23,7 +23,7 @@ const BMICalculator: React.FC = () => {
       
       setResult({ bmi: Math.round(bmi * 10) / 10, category });
     }
-  };
+  }, [weight, height, t.bmiCategories]);
 
   return (
     <div

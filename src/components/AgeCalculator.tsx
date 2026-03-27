@@ -1,9 +1,12 @@
-import React, { useState, useEffect, useCallback, useDeferredValue, useRef } from 'react';
-import { useLanguage, useTheme } from '../context/AppContext';
-import { calculateAge, AgeResult, calculateDateDifference, DateDiffResult } from '../utils/calculateAge';
-import BirthChartVisualizer from './BirthChartVisualizer';
-import { Calendar, Clock, Star, PartyPopper, Heart, Eye, Moon, Wind, Diamond, Share2, User, Globe, Sparkles, Copy, Check, BookOpen, Zap, ArrowUpRight, Award, Shield, Flame, Mountain, Waves } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useDeferredValue, useRef, Suspense } from 'react';
+import { useLanguage, useTheme } from '@/src/context/AppContext';
+import { calculateAge, AgeResult, calculateDateDifference, DateDiffResult, calculateLiveAge } from '../utils/calculateAge';
+import { calculateEaster } from '../utils/calculateEaster';
+import { signAttributes, elementIcons as astrologyElementIcons } from '../utils/astrologyData';
+import { Calendar, Clock, Star, PartyPopper, Heart, Eye, Moon, Wind, Diamond, Share2, User, Globe, Sparkles, Copy, Check, BookOpen, Zap, ArrowUpRight, Award, Shield, Flame, Mountain, Waves, Percent } from 'lucide-react';
 import { commonTimezones, getUserTimezone } from '../utils/timezones';
+
+const BirthChartVisualizer = React.lazy(() => import('./BirthChartVisualizer'));
 
 const StatCard = ({ icon: Icon, label, value, color }: { icon: any, label: string, value: string | number, color: string }) => {
   const { darkMode } = useTheme();
@@ -22,40 +25,7 @@ const StatCard = ({ icon: Icon, label, value, color }: { icon: any, label: strin
   );
 };
 
-const calculateEaster = (year: number): Date => {
-  const a = year % 19;
-  const b = Math.floor(year / 100);
-  const c = year % 100;
-  const d = Math.floor(b / 4);
-  const e = b % 4;
-  const f = Math.floor((b + 8) / 25);
-  const g = Math.floor((b - f + 1) / 3);
-  const h = (19 * a + b - d - g + 15) % 30;
-  const i = Math.floor(c / 4);
-  const k = c % 4;
-  const L = (32 + 2 * e + 2 * i - h - k) % 7;
-  const m = Math.floor((a + 11 * h + 22 * L) / 451);
-  const month = Math.floor((h + L - 7 * m + 114) / 31);
-  const day = ((h + L - 7 * m + 114) % 31) + 1;
-  return new Date(year, month - 1, day);
-};
-
-const signAttributes: Record<string, { element: string, modality: string, rulingPlanet: string }> = {
-  aries: { element: 'fire', modality: 'cardinal', rulingPlanet: 'mars' },
-  taurus: { element: 'earth', modality: 'fixed', rulingPlanet: 'venus' },
-  gemini: { element: 'air', modality: 'mutable', rulingPlanet: 'mercury' },
-  cancer: { element: 'water', modality: 'cardinal', rulingPlanet: 'moon' },
-  leo: { element: 'fire', modality: 'fixed', rulingPlanet: 'sun' },
-  virgo: { element: 'earth', modality: 'mutable', rulingPlanet: 'mercury' },
-  libra: { element: 'air', modality: 'cardinal', rulingPlanet: 'venus' },
-  scorpio: { element: 'water', modality: 'fixed', rulingPlanet: 'pluto' },
-  sagittarius: { element: 'fire', modality: 'mutable', rulingPlanet: 'jupiter' },
-  capricorn: { element: 'earth', modality: 'cardinal', rulingPlanet: 'saturn' },
-  aquarius: { element: 'air', modality: 'fixed', rulingPlanet: 'uranus' },
-  pisces: { element: 'water', modality: 'mutable', rulingPlanet: 'neptune' },
-};
-
-const elementIcons: Record<string, any> = {
+const astrologyElementIconsMap: Record<string, any> = {
   fire: Flame,
   earth: Mountain,
   air: Wind,
@@ -124,8 +94,12 @@ const AgeCalculator: React.FC = () => {
   const [targetYear, setTargetYear] = useState<string>('');
 
   const [timezone, setTimezone] = useState<string>(getUserTimezone());
-  const [activeTab, setActiveTab] = useState<'calculate' | 'compare'>('calculate');
+  const [activeTab, setActiveTab] = useState<'calculate' | 'compare' | 'percentage'>('calculate');
   
+  const [percNumber, setPercNumber] = useState<string>('');
+  const [percValue, setPercValue] = useState<string>('');
+  const [percResult, setPercResult] = useState<number | null>(null);
+
   const [compareDate1, setCompareDate1] = useState<Date | null>(null);
   const [comp1Day, setComp1Day] = useState<string>('');
   const [comp1Month, setComp1Month] = useState<string>('');
@@ -148,7 +122,7 @@ const AgeCalculator: React.FC = () => {
   const [copied, setCopied] = useState(false);
   const [holidayCountdown, setHolidayCountdown] = useState<{ days: number, hours: number, minutes: number, seconds: number } | null>(null);
   const [easterDate, setEasterDate] = useState<Date | null>(null);
-  const [isAuthReady, setIsAuthReady] = useState(false);
+  const [daysUntilEaster, setDaysUntilEaster] = useState<number | null>(null);
 
   const isInvalid = (type: 'day' | 'month' | 'year' | 'hour' | 'minute', val: string, mStr?: string, yStr?: string) => {
     if (!val) return false;
@@ -170,7 +144,8 @@ const AgeCalculator: React.FC = () => {
       case 'month':
         return n < 1 || n > 12;
       case 'year':
-        return n < 1 || n > 9999;
+        const currentYear = new Date().getFullYear();
+        return n < currentYear - 150 || n > 9999;
       case 'hour':
         return n < 0 || n > 23;
       case 'minute':
@@ -182,7 +157,14 @@ const AgeCalculator: React.FC = () => {
 
   useEffect(() => {
     const currentYear = new Date().getFullYear();
-    setEasterDate(calculateEaster(currentYear));
+    const easter = calculateEaster(currentYear);
+    setEasterDate(easter);
+    
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const diffTime = easter.getTime() - today.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+    setDaysUntilEaster(diffDays);
   }, []);
 
   const deferredResult = useDeferredValue(result);
@@ -216,16 +198,55 @@ const AgeCalculator: React.FC = () => {
       const newValidationErrors: Record<string, string> = {};
 
       // Validate Birth Date
-      if (isInvalid('day', birthDay, birthMonth, birthYear)) newValidationErrors.birthDay = t.errorInvalidDate;
-      if (isInvalid('month', birthMonth)) newValidationErrors.birthMonth = t.errorInvalidDate;
-      if (isInvalid('year', birthYear)) newValidationErrors.birthYear = t.errorInvalidDate;
+      if (!birthDay) newValidationErrors.birthDay = t.errorInvalidDate;
+      else if (isInvalid('day', birthDay, birthMonth, birthYear)) newValidationErrors.birthDay = t.errorInvalidDate;
+      
+      if (!birthMonth) newValidationErrors.birthMonth = t.errorInvalidDate;
+      else if (isInvalid('month', birthMonth)) newValidationErrors.birthMonth = t.errorInvalidDate;
+      
+      if (!birthYear) newValidationErrors.birthYear = t.errorInvalidDate;
+      else if (isInvalid('year', birthYear)) newValidationErrors.birthYear = t.errorInvalidDate;
+      
       if (isInvalid('hour', birthHour)) newValidationErrors.birthHour = t.errorInvalidDate;
       if (isInvalid('minute', birthMinute)) newValidationErrors.birthMinute = t.errorInvalidDate;
 
+      // Validate Range End if provided
+      if (endDay || endMonth || endYear) {
+        if (isInvalid('day', endDay, endMonth, endYear)) newValidationErrors.endDay = t.errorInvalidDate;
+        if (isInvalid('month', endMonth)) newValidationErrors.endMonth = t.errorInvalidDate;
+        if (isInvalid('year', endYear)) newValidationErrors.endYear = t.errorInvalidDate;
+        if (isInvalid('hour', endHour)) newValidationErrors.endHour = t.errorInvalidDate;
+        if (isInvalid('minute', endMinute)) newValidationErrors.endMinute = t.errorInvalidDate;
+      }
+
+      // Validate Holiday if provided
+      if (holidayDay || holidayMonth || holidayYear) {
+        if (isInvalid('day', holidayDay, holidayMonth, holidayYear)) newValidationErrors.holidayDay = t.errorInvalidDate;
+        if (isInvalid('month', holidayMonth)) newValidationErrors.holidayMonth = t.errorInvalidDate;
+        if (isInvalid('year', holidayYear)) newValidationErrors.holidayYear = t.errorInvalidDate;
+        if (isInvalid('hour', holidayHour)) newValidationErrors.holidayHour = t.errorInvalidDate;
+        if (isInvalid('minute', holidayMinute)) newValidationErrors.holidayMinute = t.errorInvalidDate;
+      }
+
       const birthDate = parseDate(birthDay, birthMonth, birthYear, birthHour, birthMinute);
-      if (!birthDate) {
+      if (!birthDate || Object.keys(newValidationErrors).length > 0) {
         if (showError) setError(t.errorInvalidDate);
         setValidationErrors(newValidationErrors);
+        return;
+      }
+
+      // Check if date is in the future
+      const now = new Date();
+      if (birthDate > now && !targetYear) {
+        setError(t.errorFutureDate);
+        return;
+      }
+
+      // Check if date is unreasonably far in the past (e.g., > 150 years)
+      const minDate = new Date();
+      minDate.setFullYear(minDate.getFullYear() - 150);
+      if (birthDate < minDate) {
+        setError(t.errorTooOld);
         return;
       }
 
@@ -305,6 +326,10 @@ const AgeCalculator: React.FC = () => {
       if (birthDateEnd) {
         if (birthDateEnd > nowInTimezone) {
           setError(t.errorFutureDate);
+          return;
+        }
+        if (birthDateEnd < minDate) {
+          setError(t.errorTooOld);
           return;
         }
         const result2 = calculateAge(birthDateEnd, nowInTimezone);
@@ -388,11 +413,48 @@ const AgeCalculator: React.FC = () => {
       setAgeRange(null);
       setCompareResult(null);
 
+      const newValidationErrors: Record<string, string> = {};
+
+      // Validate Date 1
+      if (!comp1Day) newValidationErrors.comp1Day = t.errorInvalidDate;
+      else if (isInvalid('day', comp1Day, comp1Month, comp1Year)) newValidationErrors.comp1Day = t.errorInvalidDate;
+      
+      if (!comp1Month) newValidationErrors.comp1Month = t.errorInvalidDate;
+      else if (isInvalid('month', comp1Month)) newValidationErrors.comp1Month = t.errorInvalidDate;
+      
+      if (!comp1Year) newValidationErrors.comp1Year = t.errorInvalidDate;
+      else if (isInvalid('year', comp1Year)) newValidationErrors.comp1Year = t.errorInvalidDate;
+      
+      if (isInvalid('hour', comp1Hour)) newValidationErrors.comp1Hour = t.errorInvalidDate;
+      if (isInvalid('minute', comp1Minute)) newValidationErrors.comp1Minute = t.errorInvalidDate;
+
+      // Validate Date 2
+      if (!comp2Day) newValidationErrors.comp2Day = t.errorInvalidDate;
+      else if (isInvalid('day', comp2Day, comp2Month, comp2Year)) newValidationErrors.comp2Day = t.errorInvalidDate;
+      
+      if (!comp2Month) newValidationErrors.comp2Month = t.errorInvalidDate;
+      else if (isInvalid('month', comp2Month)) newValidationErrors.comp2Month = t.errorInvalidDate;
+      
+      if (!comp2Year) newValidationErrors.comp2Year = t.errorInvalidDate;
+      else if (isInvalid('year', comp2Year)) newValidationErrors.comp2Year = t.errorInvalidDate;
+      
+      if (isInvalid('hour', comp2Hour)) newValidationErrors.comp2Hour = t.errorInvalidDate;
+      if (isInvalid('minute', comp2Minute)) newValidationErrors.comp2Minute = t.errorInvalidDate;
+
       const d1 = parseDate(comp1Day, comp1Month, comp1Year, comp1Hour, comp1Minute);
       const d2 = parseDate(comp2Day, comp2Month, comp2Year, comp2Hour, comp2Minute);
 
-      if (!d1 || !d2) {
+      if (!d1 || !d2 || Object.keys(newValidationErrors).length > 0) {
         setError(t.errorInvalidDate);
+        setValidationErrors(newValidationErrors);
+        return;
+      }
+
+      // Check if dates are unreasonably far in the past (e.g., > 150 years)
+      const minDate = new Date();
+      minDate.setFullYear(minDate.getFullYear() - 150);
+      if (d1 < minDate || d2 < minDate) {
+        setError(t.errorTooOld);
         return;
       }
 
@@ -408,6 +470,16 @@ const AgeCalculator: React.FC = () => {
     } catch (err) {
       console.error('Comparison error:', err);
       setError(t.errorInvalidDate);
+    }
+  };
+
+  const handleCalculatePercentage = () => {
+    const n = parseFloat(percNumber);
+    const p = parseFloat(percValue);
+    if (!isNaN(n) && !isNaN(p)) {
+      setPercResult((n * p) / 100);
+    } else {
+      setPercResult(null);
     }
   };
 
@@ -459,39 +531,57 @@ const AgeCalculator: React.FC = () => {
     }
   };
 
+  // Memoize StatCard for performance
+  const MemoizedStatCard = React.memo(StatCard);
+
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (result && dob && !targetYear) {
+      // Cache the formatter for performance
+      const formatter = new Intl.DateTimeFormat('en-US', {
+        timeZone: timezone,
+        year: 'numeric',
+        month: 'numeric',
+        day: 'numeric',
+        hour: 'numeric',
+        minute: 'numeric',
+        second: 'numeric',
+        hour12: false
+      });
+
       interval = setInterval(() => {
         const birthDate = new Date(dob);
         const baseDate = new Date();
         
-        const parts = new Intl.DateTimeFormat('en-US', {
-          timeZone: timezone,
-          year: 'numeric',
-          month: 'numeric',
-          day: 'numeric',
-          hour: 'numeric',
-          minute: 'numeric',
-          second: 'numeric',
-          hour12: false
-        }).formatToParts(baseDate);
-
-        const getPart = (type: string) => parts.find(p => p.type === type)?.value;
-        const nowInTimezone = new Date(
-          Number(getPart('year')),
-          Number(getPart('month')) - 1,
-          Number(getPart('day')),
-          Number(getPart('hour')),
-          Number(getPart('minute')),
-          Number(getPart('second'))
-        );
-        
-        setResult(calculateAge(birthDate, nowInTimezone));
+        try {
+          const parts = formatter.formatToParts(baseDate);
+          const getPart = (type: string) => parts.find(p => p.type === type)?.value;
+          const nowInTimezone = new Date(
+            Number(getPart('year')),
+            Number(getPart('month')) - 1,
+            Number(getPart('day')),
+            Number(getPart('hour')),
+            Number(getPart('minute')),
+            Number(getPart('second'))
+          );
+          
+          // Only update if the date is actually different to avoid unnecessary re-renders
+          setResult(prev => {
+            if (!prev) return null;
+            const liveUpdate = calculateLiveAge(birthDate, nowInTimezone);
+            
+            // Deep check if values changed (at least seconds)
+            if (prev.totalSeconds === liveUpdate.totalSeconds) return prev;
+            
+            return { ...prev, ...liveUpdate } as AgeResult;
+          });
+        } catch (e) {
+          console.error('Live update error:', e);
+        }
       }, 1000);
     }
     return () => clearInterval(interval);
-  }, [dob, timezone, !!result]);
+  }, [dob, timezone, !!result, targetYear]);
 
   return (
     <div className="w-full">
@@ -524,10 +614,24 @@ const AgeCalculator: React.FC = () => {
         >
           {t.differenceTitle}
         </button>
+        <button
+          onClick={() => {
+            setActiveTab('percentage');
+            setError(null);
+          }}
+          title={t.percentageCalculator}
+          className={`px-6 py-3 rounded-2xl font-bold transition-all ${
+            activeTab === 'percentage'
+              ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20'
+              : 'bg-white/10 hover:bg-white/20'
+          }`}
+        >
+          {t.percentageCalculator}
+        </button>
       </div>
 
       <div className={`p-6 md:p-8 rounded-3xl glass shadow-2xl mb-8 transition-all`}>
-        {activeTab === 'calculate' ? (
+        {activeTab === 'calculate' && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-7 gap-6 items-end">
             <div className="w-full lg:col-span-2">
               <label className={`block text-sm font-bold mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
@@ -539,7 +643,7 @@ const AgeCalculator: React.FC = () => {
                   <NumericInput
                     ref={birthDayRef}
                     nextRef={birthMonthRef}
-                    placeholder="DD"
+                    placeholder={t.dayPlaceholder}
                     value={birthDay}
                     onChange={setBirthDay}
                     maxLength={2}
@@ -556,7 +660,7 @@ const AgeCalculator: React.FC = () => {
                     ref={birthMonthRef}
                     prevRef={birthDayRef}
                     nextRef={birthYearRef}
-                    placeholder="MM"
+                    placeholder={t.monthPlaceholder}
                     value={birthMonth}
                     onChange={setBirthMonth}
                     maxLength={2}
@@ -573,7 +677,7 @@ const AgeCalculator: React.FC = () => {
                     ref={birthYearRef}
                     prevRef={birthMonthRef}
                     nextRef={birthHourRef}
-                    placeholder="YYYY"
+                    placeholder={t.yearPlaceholder}
                     value={birthYear}
                     onChange={setBirthYear}
                     maxLength={4}
@@ -597,7 +701,7 @@ const AgeCalculator: React.FC = () => {
                       ref={birthHourRef}
                       prevRef={birthYearRef}
                       nextRef={birthMinuteRef}
-                      placeholder="HH"
+                      placeholder={t.hourPlaceholder}
                       value={birthHour}
                       onChange={setBirthHour}
                       maxLength={2}
@@ -616,7 +720,7 @@ const AgeCalculator: React.FC = () => {
                     <NumericInput
                       ref={birthMinuteRef}
                       prevRef={birthHourRef}
-                      placeholder="MM"
+                      placeholder={t.minutePlaceholder}
                       value={birthMinute}
                       onChange={setBirthMinute}
                       maxLength={2}
@@ -641,7 +745,7 @@ const AgeCalculator: React.FC = () => {
                   <NumericInput
                     ref={endDayRef}
                     nextRef={endMonthRef}
-                    placeholder="DD"
+                    placeholder={t.dayPlaceholder}
                     value={endDay}
                     onChange={setEndDay}
                     maxLength={2}
@@ -658,7 +762,7 @@ const AgeCalculator: React.FC = () => {
                     ref={endMonthRef}
                     prevRef={endDayRef}
                     nextRef={endYearRef}
-                    placeholder="MM"
+                    placeholder={t.monthPlaceholder}
                     value={endMonth}
                     onChange={setEndMonth}
                     maxLength={2}
@@ -675,7 +779,7 @@ const AgeCalculator: React.FC = () => {
                     ref={endYearRef}
                     prevRef={endMonthRef}
                     nextRef={endHourRef}
-                    placeholder="YYYY"
+                    placeholder={t.yearPlaceholder}
                     value={endYear}
                     onChange={setEndYear}
                     maxLength={4}
@@ -700,7 +804,7 @@ const AgeCalculator: React.FC = () => {
                       value={endHour}
                       onChange={setEndHour}
                       maxLength={2}
-                      error={isInvalid('hour', endHour)}
+                      error={!!validationErrors.endHour || isInvalid('hour', endHour)}
                       title={t.tooltips.rangeEnd}
                       className={`w-full pl-9 pr-4 py-2 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm ${
                         darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
@@ -719,7 +823,7 @@ const AgeCalculator: React.FC = () => {
                       value={endMinute}
                       onChange={setEndMinute}
                       maxLength={2}
-                      error={isInvalid('minute', endMinute)}
+                      error={!!validationErrors.endMinute || isInvalid('minute', endMinute)}
                       title={t.tooltips.rangeEnd}
                       className={`w-full pl-9 pr-4 py-2 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm ${
                         darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
@@ -740,7 +844,7 @@ const AgeCalculator: React.FC = () => {
                   <NumericInput
                     ref={holidayDayRef}
                     nextRef={holidayMonthRef}
-                    placeholder="DD"
+                    placeholder={t.dayPlaceholder}
                     value={holidayDay}
                     onChange={setHolidayDay}
                     maxLength={2}
@@ -757,7 +861,7 @@ const AgeCalculator: React.FC = () => {
                     ref={holidayMonthRef}
                     prevRef={holidayDayRef}
                     nextRef={holidayYearRef}
-                    placeholder="MM"
+                    placeholder={t.monthPlaceholder}
                     value={holidayMonth}
                     onChange={setHolidayMonth}
                     maxLength={2}
@@ -774,7 +878,7 @@ const AgeCalculator: React.FC = () => {
                     ref={holidayYearRef}
                     prevRef={holidayMonthRef}
                     nextRef={holidayHourRef}
-                    placeholder="YYYY"
+                    placeholder={t.yearPlaceholder}
                     value={holidayYear}
                     onChange={setHolidayYear}
                     maxLength={4}
@@ -795,11 +899,11 @@ const AgeCalculator: React.FC = () => {
                       ref={holidayHourRef}
                       prevRef={holidayYearRef}
                       nextRef={holidayMinuteRef}
-                      placeholder="HH"
+                      placeholder={t.hourPlaceholder}
                       value={holidayHour}
                       onChange={setHolidayHour}
                       maxLength={2}
-                      error={isInvalid('hour', holidayHour)}
+                      error={!!validationErrors.holidayHour || isInvalid('hour', holidayHour)}
                       title={t.tooltips.holiday}
                       className={`w-full pl-9 pr-4 py-2 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm ${
                         darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
@@ -814,11 +918,11 @@ const AgeCalculator: React.FC = () => {
                     <NumericInput
                       ref={holidayMinuteRef}
                       prevRef={holidayHourRef}
-                      placeholder="MM"
+                      placeholder={t.minutePlaceholder}
                       value={holidayMinute}
                       onChange={setHolidayMinute}
                       maxLength={2}
-                      error={isInvalid('minute', holidayMinute)}
+                      error={!!validationErrors.holidayMinute || isInvalid('minute', holidayMinute)}
                       title={t.tooltips.holiday}
                       className={`w-full pl-9 pr-4 py-2 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all text-sm ${
                         darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
@@ -924,7 +1028,8 @@ const AgeCalculator: React.FC = () => {
             {activeTab === 'calculate' ? t.calculateBtn : t.compareBtn}
           </button>
         </div>
-        ) : (
+        )}
+        {activeTab === 'compare' && (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 items-end">
             <div className="w-full lg:col-span-1">
               <label className={`block text-sm font-bold mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
@@ -936,7 +1041,7 @@ const AgeCalculator: React.FC = () => {
                   <NumericInput
                     ref={comp1DayRef}
                     nextRef={comp1MonthRef}
-                    placeholder="DD"
+                    placeholder={t.dayPlaceholder}
                     value={comp1Day}
                     onChange={setComp1Day}
                     maxLength={2}
@@ -953,7 +1058,7 @@ const AgeCalculator: React.FC = () => {
                     ref={comp1MonthRef}
                     prevRef={comp1DayRef}
                     nextRef={comp1YearRef}
-                    placeholder="MM"
+                    placeholder={t.monthPlaceholder}
                     value={comp1Month}
                     onChange={setComp1Month}
                     maxLength={2}
@@ -970,7 +1075,7 @@ const AgeCalculator: React.FC = () => {
                     ref={comp1YearRef}
                     prevRef={comp1MonthRef}
                     nextRef={comp1HourRef}
-                    placeholder="YYYY"
+                    placeholder={t.yearPlaceholder}
                     value={comp1Year}
                     onChange={setComp1Year}
                     maxLength={4}
@@ -991,7 +1096,7 @@ const AgeCalculator: React.FC = () => {
                       ref={comp1HourRef}
                       prevRef={comp1YearRef}
                       nextRef={comp1MinuteRef}
-                      placeholder="HH"
+                      placeholder={t.hourPlaceholder}
                       value={comp1Hour}
                       onChange={setComp1Hour}
                       maxLength={2}
@@ -1010,7 +1115,7 @@ const AgeCalculator: React.FC = () => {
                     <NumericInput
                       ref={comp1MinuteRef}
                       prevRef={comp1HourRef}
-                      placeholder="MM"
+                      placeholder={t.minutePlaceholder}
                       value={comp1Minute}
                       onChange={setComp1Minute}
                       maxLength={2}
@@ -1035,7 +1140,7 @@ const AgeCalculator: React.FC = () => {
                   <NumericInput
                     ref={comp2DayRef}
                     nextRef={comp2MonthRef}
-                    placeholder="DD"
+                    placeholder={t.dayPlaceholder}
                     value={comp2Day}
                     onChange={setComp2Day}
                     maxLength={2}
@@ -1052,7 +1157,7 @@ const AgeCalculator: React.FC = () => {
                     ref={comp2MonthRef}
                     prevRef={comp2DayRef}
                     nextRef={comp2YearRef}
-                    placeholder="MM"
+                    placeholder={t.monthPlaceholder}
                     value={comp2Month}
                     onChange={setComp2Month}
                     maxLength={2}
@@ -1069,7 +1174,7 @@ const AgeCalculator: React.FC = () => {
                     ref={comp2YearRef}
                     prevRef={comp2MonthRef}
                     nextRef={comp2HourRef}
-                    placeholder="YYYY"
+                    placeholder={t.yearPlaceholder}
                     value={comp2Year}
                     onChange={setComp2Year}
                     maxLength={4}
@@ -1090,7 +1195,7 @@ const AgeCalculator: React.FC = () => {
                       ref={comp2HourRef}
                       prevRef={comp2YearRef}
                       nextRef={comp2MinuteRef}
-                      placeholder="HH"
+                      placeholder={t.hourPlaceholder}
                       value={comp2Hour}
                       onChange={setComp2Hour}
                       maxLength={2}
@@ -1109,7 +1214,7 @@ const AgeCalculator: React.FC = () => {
                     <NumericInput
                       ref={comp2MinuteRef}
                       prevRef={comp2HourRef}
-                      placeholder="MM"
+                      placeholder={t.minutePlaceholder}
                       value={comp2Minute}
                       onChange={setComp2Minute}
                       maxLength={2}
@@ -1134,8 +1239,106 @@ const AgeCalculator: React.FC = () => {
             </button>
           </div>
         )}
+        {activeTab === 'percentage' && (
+          <div className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <div className="space-y-2">
+                <label className={`block text-sm font-bold mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                  {t.numberLabel}
+                </label>
+                <NumericInput
+                  value={percNumber}
+                  onChange={setPercNumber}
+                  placeholder="e.g. 500"
+                  className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
+                    darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
+                  }`}
+                />
+              </div>
+              <div className="space-y-2">
+                <label className={`block text-sm font-bold mb-2 ${darkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                  {t.percentageLabel}
+                </label>
+                <NumericInput
+                  value={percValue}
+                  onChange={setPercValue}
+                  placeholder="e.g. 20"
+                  className={`w-full px-4 py-3 rounded-xl border focus:ring-2 focus:ring-blue-500 outline-none transition-all ${
+                    darkMode ? 'bg-gray-800/50 border-gray-700 text-white' : 'bg-white/50 border-gray-200 text-gray-900'
+                  }`}
+                />
+              </div>
+            </div>
+
+            <button
+              onClick={handleCalculatePercentage}
+              className="w-full px-8 py-3 bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white font-bold rounded-xl transition-all active:scale-95 shadow-lg shadow-emerald-500/20 h-[50px] flex items-center justify-center gap-2"
+            >
+              <Percent size={16} />
+              {t.calculatePercentageBtn}
+            </button>
+
+            {percResult !== null && (
+              <div className={`p-6 rounded-2xl border-2 text-center ${
+                darkMode ? 'bg-emerald-500/10 border-emerald-500/20' : 'bg-emerald-50 border-emerald-100'
+              }`}>
+                <div className="text-2xl font-black">
+                  {t.percentageResult
+                    .replace('{percentage}', percValue)
+                    .replace('{number}', percNumber)
+                    .replace('{result}', percResult.toLocaleString())}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
         {error && <p className="mt-4 text-red-500 text-sm font-medium text-center">{error}</p>}
       </div>
+
+      {/* Easter Date Section for Current Year */}
+      {easterDate && (
+        <div
+          className={`p-6 rounded-3xl glass-card flex flex-col sm:flex-row items-center justify-between border-l-4 border-yellow-500 bg-gradient-to-r from-yellow-500/5 to-transparent mb-8 transition-all hover:scale-[1.01] gap-4`}
+        >
+          <div className="flex items-center gap-4 w-full sm:w-auto">
+            <div className="p-3 rounded-2xl bg-yellow-500/20 text-yellow-500 shadow-lg shadow-yellow-500/10">
+              <Sparkles size={20} />
+            </div>
+            <div>
+              <div className={`text-[10px] font-bold uppercase tracking-widest ${darkMode ? 'text-gray-400' : 'text-gray-500'} mb-1`}>
+                {t.easterDate.replace('{year}', easterDate.getFullYear().toString())}
+              </div>
+              <div className="text-2xl font-black tracking-tight">
+                {easterDate.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex items-center gap-6 w-full sm:w-auto justify-between sm:justify-end">
+            {daysUntilEaster !== null && daysUntilEaster > 0 && (
+              <div className="text-right">
+                <div className={`text-[10px] font-bold uppercase tracking-widest opacity-40 mb-1`}>
+                  Countdown
+                </div>
+                <div className="text-sm font-bold text-blue-500">
+                  {daysUntilEaster} Days Left
+                </div>
+              </div>
+            )}
+            
+            <div className="text-right">
+              <div className={`text-[10px] font-bold uppercase tracking-widest opacity-40 mb-1`}>
+                {t.zodiacSign}
+              </div>
+              <div className="text-sm font-bold text-yellow-500/80">
+                {easterDate.getMonth() === 2 || (easterDate.getMonth() === 3 && easterDate.getDate() <= 19) 
+                  ? t.zodiacSigns['aries'] 
+                  : t.zodiacSigns['taurus']}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
 
         {activeTab === 'compare' && compareResult && (
           <div
@@ -1168,13 +1371,13 @@ const AgeCalculator: React.FC = () => {
             </div>
 
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-4">
-              <StatCard icon={Calendar} label={t.years} value={compareResult.years} color="bg-blue-500" />
-              <StatCard icon={Calendar} label={t.months} value={compareResult.months} color="bg-indigo-500" />
-              <StatCard icon={Calendar} label={t.weeks} value={compareResult.weeks} color="bg-purple-500" />
-              <StatCard icon={Calendar} label={t.days} value={compareResult.days} color="bg-pink-500" />
-              <StatCard icon={Clock} label={t.hours} value={compareResult.totalHours} color="bg-orange-500" />
-              <StatCard icon={Clock} label={t.minutes} value={compareResult.totalMinutes} color="bg-emerald-500" />
-              <StatCard icon={Clock} label={t.seconds} value={compareResult.totalSeconds} color="bg-cyan-500" />
+              <MemoizedStatCard icon={Calendar} label={t.years} value={compareResult.years} color="bg-blue-500" />
+              <MemoizedStatCard icon={Calendar} label={t.months} value={compareResult.months} color="bg-indigo-500" />
+              <MemoizedStatCard icon={Calendar} label={t.weeks} value={compareResult.weeks} color="bg-purple-500" />
+              <MemoizedStatCard icon={Calendar} label={t.days} value={compareResult.days} color="bg-pink-500" />
+              <MemoizedStatCard icon={Clock} label={t.hours} value={compareResult.totalHours} color="bg-orange-500" />
+              <MemoizedStatCard icon={Clock} label={t.minutes} value={compareResult.totalMinutes} color="bg-emerald-500" />
+              <MemoizedStatCard icon={Clock} label={t.seconds} value={compareResult.totalSeconds} color="bg-cyan-500" />
             </div>
           </div>
         )}
@@ -1202,19 +1405,19 @@ const AgeCalculator: React.FC = () => {
             </div>
             {/* Main Stats */}
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-              <StatCard icon={Calendar} label={t.years} value={result.years} color="bg-blue-500" />
-              <StatCard icon={User} label={t.ageLabel} value={Math.floor(result.years)} color="bg-blue-600" />
-              <StatCard icon={Moon} label={t.lunarAge} value={result.lunarAge} color="bg-indigo-400" />
-              <StatCard icon={Star} label={t.sunSignLabel} value={t.zodiacSigns[result.zodiacSign]} color="bg-orange-500" />
-              <StatCard icon={Calendar} label={t.months} value={result.totalMonths} color="bg-indigo-500" />
-              <StatCard icon={Calendar} label={t.weeks} value={result.weeks} color="bg-violet-500" />
-              <StatCard icon={Calendar} label={t.days} value={result.totalDays} color="bg-purple-500" />
-              <StatCard icon={Clock} label={t.hours} value={result.totalHours} color="bg-pink-500" />
-              <StatCard icon={Clock} label={t.minutes} value={result.totalMinutes} color="bg-orange-500" />
-              <StatCard icon={Clock} label={t.seconds} value={result.totalSeconds} color="bg-emerald-500" />
-              <StatCard icon={Diamond} label={t.birthstone} value={t.birthstones[result.birthstone] || result.birthstone} color="bg-cyan-500" />
-              <StatCard icon={Sparkles} label={t.chineseZodiacLabel} value={t.chineseZodiacSigns[result.chineseZodiac]} color="bg-red-600" />
-              <StatCard icon={Moon} label={t.lunarPhaseLabel} value={t.lunarPhases[result.lunarPhase]} color="bg-slate-700" />
+              <MemoizedStatCard icon={Calendar} label={t.years} value={result.years} color="bg-blue-500" />
+              <MemoizedStatCard icon={User} label={t.ageLabel} value={Math.floor(result.years)} color="bg-blue-600" />
+              <MemoizedStatCard icon={Moon} label={t.lunarAge} value={result.lunarAge} color="bg-indigo-400" />
+              <MemoizedStatCard icon={Star} label={t.sunSignLabel} value={t.zodiacSigns[result.zodiacSign]} color="bg-orange-500" />
+              <MemoizedStatCard icon={Calendar} label={t.months} value={result.totalMonths} color="bg-indigo-500" />
+              <MemoizedStatCard icon={Calendar} label={t.weeks} value={result.weeks} color="bg-violet-500" />
+              <MemoizedStatCard icon={Calendar} label={t.days} value={result.totalDays} color="bg-purple-500" />
+              <MemoizedStatCard icon={Clock} label={t.hours} value={result.totalHours} color="bg-pink-500" />
+              <MemoizedStatCard icon={Clock} label={t.minutes} value={result.totalMinutes} color="bg-orange-500" />
+              <MemoizedStatCard icon={Clock} label={t.seconds} value={result.totalSeconds} color="bg-emerald-500" />
+              <MemoizedStatCard icon={Diamond} label={t.birthstone} value={t.birthstones[result.birthstone] || result.birthstone} color="bg-cyan-500" />
+              <MemoizedStatCard icon={Sparkles} label={t.chineseZodiacLabel} value={t.chineseZodiacSigns[result.chineseZodiac]} color="bg-red-600" />
+              <MemoizedStatCard icon={Moon} label={t.lunarPhaseLabel} value={t.lunarPhases[result.lunarPhase]} color="bg-slate-700" />
             </div>
 
             {/* The Big Three Summary */}
@@ -1230,7 +1433,7 @@ const AgeCalculator: React.FC = () => {
                   { label: t.risingSignLabel, sign: result.birthChart.risingSign, icon: ArrowUpRight, color: 'text-emerald-500', bgColor: 'bg-emerald-500/10', borderColor: 'border-emerald-500/30', meaning: t.planetMeanings.rising, interpretation: t.risingSignInterpretations[result.birthChart.risingSign] },
                 ].map((item, idx) => {
                   const attrs = signAttributes[item.sign];
-                  const ElementIcon = elementIcons[attrs.element];
+                  const ElementIcon = astrologyElementIconsMap[attrs.element];
                   return (
                     <div
                       key={item.label}
@@ -1340,41 +1543,12 @@ const AgeCalculator: React.FC = () => {
                 {t.lifeStatsTitle}
               </h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <StatCard icon={Heart} label={t.heartbeats} value={result.lifeStats.heartbeats} color="bg-red-500" />
-                <StatCard icon={Eye} label={t.eyeBlinks} value={result.lifeStats.eyeBlinks} color="bg-blue-400" />
-                <StatCard icon={Moon} label={t.sleepTime} value={`${result.lifeStats.sleepDays} ${t.days.toLowerCase()}`} color="bg-indigo-700" />
-                <StatCard icon={Wind} label={t.breathCount} value={result.lifeStats.breaths} color="bg-teal-500" />
+                <MemoizedStatCard icon={Heart} label={t.heartbeats} value={result.lifeStats.heartbeats} color="bg-red-500" />
+                <MemoizedStatCard icon={Eye} label={t.eyeBlinks} value={result.lifeStats.eyeBlinks} color="bg-blue-400" />
+                <MemoizedStatCard icon={Moon} label={t.sleepTime} value={`${result.lifeStats.sleepDays} ${t.days.toLowerCase()}`} color="bg-indigo-700" />
+                <MemoizedStatCard icon={Wind} label={t.breathCount} value={result.lifeStats.breaths} color="bg-teal-500" />
               </div>
             </div>
-
-            {/* Easter Date Section */}
-            {easterDate && (
-              <div
-                className={`p-6 rounded-3xl glass-card flex items-center justify-between border-l-4 border-yellow-500 bg-gradient-to-r from-yellow-500/5 to-transparent`}
-              >
-                <div className="flex items-center gap-4">
-                  <div className="p-3 rounded-2xl bg-yellow-500/20 text-yellow-500 shadow-lg shadow-yellow-500/10">
-                    <Sparkles size={20} />
-                  </div>
-                  <div>
-                    <div className={`text-[10px] font-bold uppercase tracking-widest ${darkMode ? 'text-gray-400' : 'text-gray-500'} mb-1`}>
-                      {t.easterDate.replace('{year}', easterDate.getFullYear().toString())}
-                    </div>
-                    <div className="text-2xl font-black tracking-tight">
-                      {easterDate.toLocaleDateString(undefined, { month: 'long', day: 'numeric', year: 'numeric' })}
-                    </div>
-                  </div>
-                </div>
-                <div className="hidden sm:block text-right">
-                  <div className={`text-[10px] font-bold uppercase tracking-widest opacity-40 mb-1`}>
-                    {t.zodiacSign}
-                  </div>
-                  <div className="text-sm font-bold text-yellow-500/80">
-                    {t.zodiacSigns['aries']} / {t.zodiacSigns['pisces']}
-                  </div>
-                </div>
-              </div>
-            )}
 
             {/* Next Birthday Countdown Timer */}
             <div className="space-y-4">
@@ -1416,7 +1590,9 @@ const AgeCalculator: React.FC = () => {
 
               <div className="space-y-8">
                 <div>
+                <Suspense fallback={<div className="h-96 flex items-center justify-center opacity-50 font-bold uppercase tracking-widest">Loading Chart...</div>}>
                   <BirthChartVisualizer result={deferredResult} t={t} darkMode={darkMode} />
+                </Suspense>
                 </div>
 
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -1876,10 +2052,17 @@ const AgeCalculator: React.FC = () => {
               <div
                 className="p-8 rounded-3xl glass-card border border-emerald-500/30 space-y-4"
               >
-                <h3 className="text-xl font-black tracking-tight flex items-center justify-center gap-2 text-emerald-500">
-                  <PartyPopper size={20} />
-                  {t.holidayCountdownLabel}
-                </h3>
+                <div className="text-center space-y-1">
+                  <h3 className="text-xl font-black tracking-tight flex items-center justify-center gap-2 text-emerald-500">
+                    <PartyPopper size={20} />
+                    {t.holidayCountdownLabel}
+                  </h3>
+                  {holidayCountdown.days > 0 && (
+                    <p className="text-sm opacity-60">
+                      {t.daysUntilHoliday.replace('{days}', holidayCountdown.days.toString())}
+                    </p>
+                  )}
+                </div>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   {[
                     { label: t.days, value: holidayCountdown.days },

@@ -1,5 +1,5 @@
 import React from 'react';
-import { useTheme } from '../context/AppContext';
+import { useTheme } from '@/src/context/AppContext';
 
 interface LogoProps {
   size?: number;

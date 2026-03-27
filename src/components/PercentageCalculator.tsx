@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Percent, Hash, Calculator } from 'lucide-react';
-import { useLanguage, useTheme } from '../context/AppContext';
+import { useLanguage, useTheme } from '@/src/context/AppContext';
 import NumericInput from './NumericInput';
 
 const PercentageCalculator: React.FC = () => {
@@ -10,13 +10,13 @@ const PercentageCalculator: React.FC = () => {
   const [percentage, setPercentage] = useState<string>('');
   const [result, setResult] = useState<number | null>(null);
 
-  const calculatePercentage = () => {
+  const calculatePercentage = React.useCallback(() => {
     const n = parseFloat(number);
     const p = parseFloat(percentage);
     if (!isNaN(n) && !isNaN(p)) {
       setResult((n * p) / 100);
     }
-  };
+  }, [number, percentage]);
 
   return (
     <div className={`p-8 rounded-3xl glass-card shadow-2xl max-w-2xl mx-auto`}>

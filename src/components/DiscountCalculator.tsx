@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Tag, ShoppingCart } from 'lucide-react';
-import { useLanguage, useTheme } from '../context/AppContext';
+import { useLanguage, useTheme } from '@/src/context/AppContext';
 import NumericInput from './NumericInput';
 
 const DiscountCalculator: React.FC = () => {
@@ -11,7 +11,7 @@ const DiscountCalculator: React.FC = () => {
   const [error, setError] = useState<string | null>(null);
   const [result, setResult] = useState<{ finalPrice: number; savings: number } | null>(null);
 
-  const calculateDiscount = () => {
+  const calculateDiscount = React.useCallback(() => {
     setError(null);
     setResult(null);
 
@@ -31,7 +31,7 @@ const DiscountCalculator: React.FC = () => {
     const savings = p * (d / 100);
     const finalPrice = p - savings;
     setResult({ finalPrice: Math.round(finalPrice * 100) / 100, savings: Math.round(savings * 100) / 100 });
-  };
+  }, [price, discount, t.errorInvalidPrice, t.errorInvalidDiscount]);
 
   return (
     <div className={`p-8 rounded-3xl glass-card shadow-2xl max-w-2xl mx-auto`}>

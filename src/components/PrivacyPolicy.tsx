@@ -1,5 +1,5 @@
 import React, { useContext } from 'react';
-import { LanguageContext } from '../context/AppContext';
+import { LanguageContext } from '@/src/context/AppContext';
 import { Shield, Clock, FileText, Lock, Eye, Mail } from 'lucide-react';
 
 const PrivacyPolicy: React.FC = () => {

@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Mail, User, MessageSquare, Send, CheckCircle } from 'lucide-react';
-import { useLanguage, useTheme } from '../context/AppContext';
+import { useLanguage, useTheme } from '@/src/context/AppContext';
 
 const Contact: React.FC = () => {
   const { t } = useLanguage();

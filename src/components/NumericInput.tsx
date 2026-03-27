@@ -1,4 +1,5 @@
 import React from 'react';
+import { motion } from 'motion/react';
 
 interface NumericInputProps {
   value: string;
@@ -13,7 +14,7 @@ interface NumericInputProps {
   title?: string;
 }
 
-const NumericInput = React.forwardRef<HTMLInputElement, NumericInputProps>(({ 
+const NumericInput = React.memo(React.forwardRef<HTMLInputElement, NumericInputProps>(({ 
   value, 
   onChange, 
   placeholder, 
@@ -46,7 +47,7 @@ const NumericInput = React.forwardRef<HTMLInputElement, NumericInputProps>(({
   };
 
   return (
-    <input
+    <motion.input
       ref={ref}
       id={id}
       type="text"
@@ -58,9 +59,12 @@ const NumericInput = React.forwardRef<HTMLInputElement, NumericInputProps>(({
       title={title}
       className={`${className} ${error ? 'border-red-500 focus:ring-red-500' : ''}`}
       autoComplete="off"
+      whileFocus={{ scale: 1.02, boxShadow: "0 0 0 2px rgba(59, 130, 246, 0.5)" }}
+      animate={error ? { x: [-2, 2, -2, 2, 0] } : { x: 0 }}
+      transition={{ duration: 0.3 }}
     />
   );
-});
+}));
 
 NumericInput.displayName = 'NumericInput';
 

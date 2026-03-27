@@ -1,6 +1,6 @@
 import React from 'react';
 import { Calendar } from 'lucide-react';
-import { useTheme } from '../context/AppContext';
+import { useTheme } from '@/src/context/AppContext';
 
 interface DatePickerProps {
   day: string;

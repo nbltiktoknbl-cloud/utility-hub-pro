@@ -405,3 +405,32 @@ export const calculateAge = (dob: Date, now: Date = new Date()): AgeResult => {
     lifeStats
   };
 };
+
+export const calculateLiveAge = (dob: Date, now: Date): Partial<AgeResult> => {
+  const diff = calculateDateDifference(dob, now);
+  
+  let nextBirthdayDate = new Date(now.getFullYear(), dob.getMonth(), dob.getDate(), dob.getHours(), dob.getMinutes(), dob.getSeconds());
+  if (nextBirthdayDate < now) {
+    nextBirthdayDate.setFullYear(now.getFullYear() + 1);
+  }
+  const msToNext = nextBirthdayDate.getTime() - now.getTime();
+  const nextBirthday = {
+    days: Math.floor(msToNext / (1000 * 60 * 60 * 24)),
+    hours: Math.floor((msToNext % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)),
+    minutes: Math.floor((msToNext % (1000 * 60 * 60)) / (1000 * 60)),
+    seconds: Math.floor((msToNext % (1000 * 60)) / 1000)
+  };
+
+  const lifeStats = {
+    heartbeats: diff.totalMinutes * 80,
+    eyeBlinks: diff.totalMinutes * 17.5,
+    sleepDays: Math.floor(diff.totalDays * (8 / 24)),
+    breaths: diff.totalMinutes * 16
+  };
+
+  return {
+    ...diff,
+    nextBirthday,
+    lifeStats
+  };
+};

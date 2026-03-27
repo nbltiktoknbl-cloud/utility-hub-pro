@@ -1,21 +1,23 @@
 import React from 'react';
 import { Calendar, Scale, Tag, Percent, ArrowRight } from 'lucide-react';
-import { useLanguage, useTheme } from '../context/AppContext';
+import { useLanguage, useTheme } from '@/src/context/AppContext';
 
 interface ToolCardProps {
   icon: any;
   title: string;
   description: string;
   onClick: () => void;
+  onMouseEnter?: () => void;
   color: string;
   delay: number;
 }
 
-const ToolCard: React.FC<ToolCardProps> = ({ icon: Icon, title, description, onClick, color, delay }) => {
+const ToolCard = React.memo<ToolCardProps>(({ icon: Icon, title, description, onClick, onMouseEnter, color, delay }) => {
   const { darkMode } = useTheme();
   return (
     <div
       onClick={onClick}
+      onMouseEnter={onMouseEnter}
       className={`p-8 rounded-3xl glass-card border-2 border-transparent hover:border-blue-500/30 transition-all cursor-pointer group flex flex-col h-full`}
     >
       <div className={`p-4 rounded-2xl w-fit mb-6 transition-transform group-hover:scale-110 ${color}`}>
@@ -31,10 +33,9 @@ const ToolCard: React.FC<ToolCardProps> = ({ icon: Icon, title, description, onC
       </div>
     </div>
   );
-};
+});
 
-const Home: React.FC<{ onSelectTool: (tool: any) => void }> = ({ onSelectTool }) => {
-  console.log('Home rendering');
+const Home: React.FC<{ onSelectTool: (tool: any) => void, onHoverTool?: (tool: any) => void }> = ({ onSelectTool, onHoverTool }) => {
   const { t } = useLanguage();
   
   const tools = [
@@ -77,6 +78,7 @@ const Home: React.FC<{ onSelectTool: (tool: any) => void }> = ({ onSelectTool })
           title={tool.title}
           description={tool.description}
           onClick={() => onSelectTool(tool.id)}
+          onMouseEnter={() => onHoverTool?.(tool.id)}
           color={tool.color}
           delay={idx * 0.1}
         />

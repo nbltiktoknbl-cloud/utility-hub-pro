@@ -1,5 +1,5 @@
 import React from 'react';
-import { useLanguage, useTheme } from '../context/AppContext';
+import { useLanguage, useTheme } from '@/src/context/AppContext';
 import Logo from './Logo';
 
 interface FooterProps {
@@ -19,6 +19,12 @@ const Footer: React.FC<FooterProps> = ({ setActivePage }) => {
         <p className="text-sm font-medium mb-4">
           {t.footerText}
         </p>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8 max-w-2xl mx-auto text-sm">
+          <button onClick={() => setActivePage('age')} className="hover:text-blue-500 transition-colors text-left">{t.title}</button>
+          <button onClick={() => setActivePage('bmi')} className="hover:text-blue-500 transition-colors text-left">{t.bmiCalculator}</button>
+          <button onClick={() => setActivePage('discount')} className="hover:text-blue-500 transition-colors text-left">{t.discountCalculator}</button>
+          <button onClick={() => setActivePage('percentage')} className="hover:text-blue-500 transition-colors text-left">{t.percentageCalculator}</button>
+        </div>
         <div className="flex justify-center gap-6 text-xs uppercase tracking-widest font-bold">
           <button onClick={() => setActivePage('privacy')} className="hover:text-blue-500 transition-colors uppercase">{t.privacyPolicy}</button>
           <button onClick={() => setActivePage('home')} className="hover:text-blue-500 transition-colors uppercase">{t.termsOfService}</button>

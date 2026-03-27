@@ -1,6 +1,6 @@
 import React from 'react';
 import { Info, Shield, Zap, Globe } from 'lucide-react';
-import { useLanguage, useTheme } from '../context/AppContext';
+import { useLanguage, useTheme } from '@/src/context/AppContext';
 
 const FeatureItem = ({ icon: Icon, title, description, delay }: { icon: any, title: string, description: string, delay: number }) => {
   const { darkMode } = useTheme();

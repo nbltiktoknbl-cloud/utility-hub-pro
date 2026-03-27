@@ -3,7 +3,21 @@ import * as d3 from 'd3';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip as RechartsTooltip } from 'recharts';
 import { AgeResult } from '../utils/calculateAge';
 import { TranslationSet } from '../utils/translations';
-import { Info, Star, Moon, Sun, Globe, Heart, Zap, Compass } from 'lucide-react';
+import { Info, Star, Moon, Sun, Globe, Heart, Zap, Compass, Flame, Mountain, Wind, Waves, Shield, Award } from 'lucide-react';
+import { signAttributes } from '../utils/astrologyData';
+
+const elementIconsMap: Record<string, any> = {
+  fire: Flame,
+  earth: Mountain,
+  air: Wind,
+  water: Waves
+};
+
+const modalityIconsMap: Record<string, any> = {
+  cardinal: Zap,
+  fixed: Shield,
+  mutable: Award
+};
 
 interface BirthChartVisualizerProps {
   result: AgeResult;
@@ -209,18 +223,62 @@ const BirthChartVisualizer: React.FC<BirthChartVisualizerProps> = ({ result, t, 
           
           {/* Interactive Tooltip */}
           {hoveredPlanet && (
-            <div className="absolute top-4 left-4 p-4 rounded-2xl glass-card border border-white/10 z-20 pointer-events-none">
-              <div className="flex items-center gap-3 mb-2">
-                <div className="p-2 rounded-lg bg-white/5" style={{ color: hoveredPlanet.color }}>
-                  <hoveredPlanet.icon size={16} />
+            <div className="absolute top-4 left-4 p-5 rounded-2xl glass-card border border-white/10 z-20 pointer-events-none shadow-2xl min-w-[200px]">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="p-2.5 rounded-xl bg-white/5 shadow-inner" style={{ color: hoveredPlanet.color }}>
+                  <hoveredPlanet.icon size={20} />
                 </div>
                 <div>
-                  <div className="text-[10px] font-bold uppercase tracking-widest opacity-60">{hoveredPlanet.label}</div>
-                  <div className="text-lg font-black">{t.zodiacSigns[hoveredPlanet.sign]}</div>
+                  <div className="text-[10px] font-bold uppercase tracking-widest opacity-60 leading-none mb-1">{hoveredPlanet.label}</div>
+                  <div className="text-xl font-black leading-none">{t.zodiacSigns[hoveredPlanet.sign]}</div>
                 </div>
               </div>
-              <div className="text-xs font-bold opacity-70">
-                {hoveredPlanet.degree}° {t.zodiacSigns[hoveredPlanet.sign]} • {t.houseLabel.replace('{n}', hoveredPlanet.house.toString())}
+              
+              <div className="space-y-3">
+                <div className="flex items-center justify-between text-xs font-bold">
+                  <span className="opacity-50 uppercase tracking-tighter">{t.degreeLabel}</span>
+                  <span className="tabular-nums">{hoveredPlanet.degree}° {t.zodiacSigns[hoveredPlanet.sign]}</span>
+                </div>
+                <div className="flex items-center justify-between text-xs font-bold">
+                  <span className="opacity-50 uppercase tracking-tighter">{t.houseLabel.split(' ')[0]}</span>
+                  <span className="tabular-nums">{hoveredPlanet.house}</span>
+                </div>
+                
+                <div className="h-px bg-white/10 my-2" />
+                
+                {signAttributes[hoveredPlanet.sign] && (
+                  <div className="grid grid-cols-1 gap-2">
+                    <div className="flex items-center gap-2">
+                      <div className="p-1 rounded bg-orange-500/10 text-orange-400">
+                        {React.createElement(elementIconsMap[signAttributes[hoveredPlanet.sign].element], { size: 12 })}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[8px] uppercase font-bold opacity-40 leading-none">{t.elementLabel}</span>
+                        <span className="text-[10px] font-bold">{t.elements[signAttributes[hoveredPlanet.sign].element]}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <div className="p-1 rounded bg-purple-500/10 text-purple-400">
+                        {React.createElement(modalityIconsMap[signAttributes[hoveredPlanet.sign].modality], { size: 12 })}
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[8px] uppercase font-bold opacity-40 leading-none">{t.modalityLabel}</span>
+                        <span className="text-[10px] font-bold">{t.modalities[signAttributes[hoveredPlanet.sign].modality]}</span>
+                      </div>
+                    </div>
+                    
+                    <div className="flex items-center gap-2">
+                      <div className="p-1 rounded bg-blue-500/10 text-blue-400">
+                        <Globe size={12} />
+                      </div>
+                      <div className="flex flex-col">
+                        <span className="text-[8px] uppercase font-bold opacity-40 leading-none">{t.rulingPlanetLabel}</span>
+                        <span className="text-[10px] font-bold">{t.rulingPlanets[signAttributes[hoveredPlanet.sign].rulingPlanet]}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
             </div>
           )}

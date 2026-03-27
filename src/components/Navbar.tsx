@@ -1,14 +1,15 @@
 import React from 'react';
-import { useLanguage, useTheme } from '../context/AppContext';
+import { useLanguage, useTheme } from '@/src/context/AppContext';
 import { Calculator, Scale, Tag, Moon, Sun, Globe } from 'lucide-react';
 import Logo from './Logo';
 
 interface NavbarProps {
   activePage: 'home' | 'about' | 'contact' | 'age' | 'bmi' | 'discount' | 'percentage' | 'privacy';
   setActivePage: (page: 'home' | 'about' | 'contact' | 'age' | 'bmi' | 'discount' | 'percentage' | 'privacy') => void;
+  onHoverNav?: (page: any) => void;
 }
 
-const Navbar: React.FC<NavbarProps> = ({ activePage, setActivePage }) => {
+const Navbar: React.FC<NavbarProps> = ({ activePage, setActivePage, onHoverNav }) => {
   const { t, lang, setLang } = useLanguage();
   const { darkMode, toggleDarkMode } = useTheme();
 
@@ -32,6 +33,7 @@ const Navbar: React.FC<NavbarProps> = ({ activePage, setActivePage }) => {
             <button
               key={item.id}
               onClick={() => setActivePage(item.id)}
+              onMouseEnter={() => onHoverNav?.(item.id)}
               className={`px-4 py-2 rounded-xl font-bold text-sm transition-all ${
                 activePage === item.id
                   ? (darkMode ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/40' : 'bg-blue-600 text-white shadow-md')
